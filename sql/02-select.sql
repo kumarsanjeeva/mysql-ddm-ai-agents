@@ -1,0 +1,3 @@
+SELECT CURRENT_USER();
+SELECT * FROM ddv_mask.customers ORDER BY id;
+SHOW WARNINGS;

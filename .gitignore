@@ -1,0 +1,17 @@
+﻿# secrets and local files
+.local/
+*.cnf
+*.env
+*.pass
+*.pw
+*.key
+*.pem
+
+# local/editor/OS
+*.log
+*.tmp
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.claude/

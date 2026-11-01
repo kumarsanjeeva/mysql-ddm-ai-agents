@@ -1,0 +1,31 @@
+--------------
+SELECT CURRENT_USER()
+--------------
+
++----------------+
+| CURRENT_USER() |
++----------------+
+| ddv_admin@%    |
++----------------+
+1 row in set (0.003 sec)
+
+--------------
+SELECT * FROM ddv_mask.customers ORDER BY id
+--------------
+
++----+---------------+----------+--------------------+
+| id | name          | phone    | email              |
++----+---------------+----------+--------------------+
+|  1 | Alice Example | 555-0101 | alice@example.test |
+|  2 | Bob Sample    | 555-0102 | bob@example.test   |
+|  3 | Carol Demo    | 555-0103 | carol@example.test |
++----+---------------+----------+--------------------+
+3 rows in set (0.006 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.002 sec)
+
+Bye

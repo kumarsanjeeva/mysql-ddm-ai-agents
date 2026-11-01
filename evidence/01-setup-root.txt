@@ -1,0 +1,163 @@
+--------------
+SELECT VERSION()
+--------------
+
++------------------+
+| VERSION()        |
++------------------+
+| 9.7.4-commercial |
++------------------+
+1 row in set (0.006 sec)
+
+--------------
+SELECT CURRENT_USER()
+--------------
+
++----------------+
+| CURRENT_USER() |
++----------------+
+| root@localhost |
++----------------+
+1 row in set (0.002 sec)
+
+--------------
+CREATE SCHEMA ddv_mask
+--------------
+
+Query OK, 1 row affected (0.179 sec)
+
+--------------
+USE ddv_mask
+--------------
+
+Query OK, 0 rows affected (0.005 sec)
+
+--------------
+CREATE TABLE customers (
+  id INT NOT NULL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  phone VARCHAR(20) NOT NULL,
+  email VARCHAR(100) NOT NULL
+)
+--------------
+
+Query OK, 0 rows affected (0.145 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.002 sec)
+
+--------------
+INSERT INTO customers VALUES
+  (1, 'Alice Example', '555-0101', 'alice@example.test'),
+  (2, 'Bob Sample',    '555-0102', 'bob@example.test'),
+  (3, 'Carol Demo',    '555-0103', 'carol@example.test')
+--------------
+
+Query OK, 3 rows affected (0.051 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.007 sec)
+
+--------------
+CREATE MASKING POLICY mask_phone(phone_column)
+CASE WHEN CURRENT_USER_IN('ddv_admin@%')
+     THEN phone_column
+     ELSE mask_inner(phone_column, 0, 4, '*')
+END
+--------------
+
+Query OK, 0 rows affected (0.032 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.003 sec)
+
+--------------
+CREATE MASKING POLICY mask_email(email_column)
+CASE WHEN CURRENT_USER_IN('ddv_admin@%')
+     THEN email_column
+     ELSE mask_outer(email_column, 2, 2, '#')
+END
+--------------
+
+Query OK, 0 rows affected (0.032 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.005 sec)
+
+--------------
+ALTER TABLE customers MODIFY COLUMN phone VARCHAR(20) NOT NULL MASKING POLICY mask_phone
+--------------
+
+Query OK, 0 rows affected (0.087 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.002 sec)
+
+--------------
+ALTER TABLE customers MODIFY COLUMN email VARCHAR(100) NOT NULL MASKING POLICY mask_email
+--------------
+
+Query OK, 0 rows affected (0.067 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.002 sec)
+
+--------------
+GRANT SELECT ON ddv_mask.* TO 'ddv_agent'@'%'
+--------------
+
+Query OK, 0 rows affected (0.016 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.002 sec)
+
+--------------
+GRANT SELECT ON ddv_mask.* TO 'ddv_admin'@'%'
+--------------
+
+Query OK, 0 rows affected (0.016 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.003 sec)
+
+--------------
+SELECT * FROM customers ORDER BY id
+--------------
+
++----+---------------+----------+--------------------+
+| id | name          | phone    | email              |
++----+---------------+----------+--------------------+
+|  1 | Alice Example | ****0101 | ##ice@example.te## |
+|  2 | Bob Sample    | ****0102 | ##b@example.te##   |
+|  3 | Carol Demo    | ****0103 | ##rol@example.te## |
++----+---------------+----------+--------------------+
+3 rows in set (0.007 sec)
+
+Bye
