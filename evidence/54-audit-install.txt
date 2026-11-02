@@ -1,0 +1,24 @@
+--------------
+# Copyright (c) 2025, 2026, Oracle and/or its affiliates.
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+CREATE TABLE IF NOT EXISTS audit_log_filter(NAME VARCHAR(64) BINARY NOT NULL PRIMARY KEY, FILTER JSON NOT NULL) engine= InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_ci
+--------------
+
+Query OK, 0 rows affected, 1 warning (0.346 sec)
+
+--------------
+CREATE TABLE IF NOT EXISTS audit_log_user(USER VARCHAR(32) BINARY NOT NULL, HOST VARCHAR(255) CHARACTER SET ASCII NOT NULL, FILTERNAME VARCHAR(64) BINARY NOT NULL, PRIMARY KEY (USER, HOST), FOREIGN KEY (FILTERNAME) REFERENCES audit_log_filter(NAME)) engine= InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_ci
+--------------
+
+Query OK, 0 rows affected, 2 warnings (0.288 sec)
+
+--------------
+INSTALL COMPONENT "file://component_audit_log"
+--------------
+
+ERROR 3536 (HY000) at line 6: Initialization method provided by component 'audit_log' failed.
+Bye

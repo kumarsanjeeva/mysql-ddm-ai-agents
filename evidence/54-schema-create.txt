@@ -1,0 +1,13 @@
+--------------
+CREATE SCHEMA ddv_sec
+--------------
+
+Query OK, 1 row affected (0.107 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.005 sec)
+
+Bye

@@ -1,0 +1,98 @@
+--------------
+# Copyright (c) 2025, 2026, Oracle and/or its affiliates.
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+-- Audit Log Uninstallation script
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+-- 1. Drops the functions.
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+-- 2. Drops the tables.
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+-- 3. Uninstalls the component.
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+-- Note: Please specify the schema name before
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+-- running the script using either -D or --database.
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+-- Uninstall the component.
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+UNINSTALL COMPONENT "file://component_audit_log"
+--------------
+
+ERROR 3537 (HY000) at line 12: Component specified by URN 'file://component_audit_log' to unload has not been loaded before.
+--------------
+-- Drop the tables.
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+DROP TABLE IF EXISTS audit_log_user
+--------------
+
+Query OK, 0 rows affected (0.267 sec)
+
+--------------
+DROP TABLE IF EXISTS audit_log_filter
+--------------
+
+Query OK, 0 rows affected (0.112 sec)
+
+Bye
+--------------
+DROP SCHEMA ddv_sec
+--------------
+
+Query OK, 0 rows affected (0.040 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+SELECT * FROM mysql.component
+--------------
+
++--------------+--------------------+------------------------------------+
+| component_id | component_group_id | component_urn                      |
++--------------+--------------------+------------------------------------+
+|            1 |                  1 | file://component_masking           |
+|            2 |                  2 | file://component_masking_functions |
+|            3 |                  3 | file://component_object_policy     |
++--------------+--------------------+------------------------------------+
+3 rows in set (0.002 sec)
+
+Bye

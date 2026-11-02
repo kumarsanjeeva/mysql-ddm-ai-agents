@@ -371,3 +371,30 @@ Files in sql/, agent/ and evidence/ not listed in earlier index sections. Step =
 | sql/53-reset-persist.sql | Step 5 Firewall | c7b27a7b9232f2e706d54a94d0c46da2d32c83fd475f92048647a5afac1a5bec |
 | sql/53-teardown-1.sql | Step 5 Firewall | 95170137e4ffcdc2f51d7d6a541a7ea691a57404959f04b8bf9b2f3ce243c800 |
 | sql/53-teardown-2.sql | Step 5 Firewall | faceeebda5e078c18e53b5d898cb33d58e20b78023691364de6fe7db00706a0d |
+
+## 17. Step 5 Audit findings (F54 onward)
+
+Added after earlier sections; earlier entries unchanged. All captured. Files are in evidence/ (54-*). The planned filtered-audit test was not run (see F54).
+
+- **F54.** (captured) `audit_log_component_filter_install.sql` run with `-D ddv_sec` created `audit_log_filter` and `audit_log_user` in `ddv_sec` and then failed: `ERROR 3536 (HY000): Initialization method provided by component 'audit_log' failed.` `mysql.component` did not list the audit component. (54-audit-install.txt, 54-audit-state.txt)
+- **F55.** (captured) The server error log, read through `performance_schema.error_log`, held `Component audit_log reported: 'Failed to open 'mysql.audit_log_filter' audit_log table.'` (54-audit-error-log.txt)
+- **F56.** (captured) The documented `audit_log_component_filter_uninstall.sql` run against `ddv_sec` returned `ERROR 3537 (HY000): Component specified by URN 'file://component_audit_log' to unload has not been loaded before.` for the UNINSTALL COMPONENT line and dropped both tables; `ddv_sec` was then dropped. The after snapshot compares equal to the baseline once timings are stripped. (54-audit-uninstall.txt, 54-after.txt, 54-compare.txt)
+- **F57.** (not tested) Filtered audit logging for `ddv_agent`, reading the log with `audit_log_read`, and the default-filter behaviour were not tested because the install failed. The manual says no account is logged until a filter is assigned (reasoning/manual-documented, `.local` notes).
+
+## 18. Evidence index additions (Step 5 Audit attempt)
+
+Files in sql/, agent/ and evidence/ not listed in earlier index sections. Step = Step 5 Audit attempt.
+
+| File | Step | SHA-256 |
+|---|---|---|
+| evidence/54-after.txt | Step 5 Audit attempt | 9d5105042ff317bc48cf7dbae04df836518e387bf0f90f4c34c9200ab749de44 |
+| evidence/54-audit-error-log.txt | Step 5 Audit attempt | 86b9b931ffc1b5f2402e25f1e48bedede79f52ca6e6a835383fa29efc3ba2ffe |
+| evidence/54-audit-install.txt | Step 5 Audit attempt | d1e9df96224a290cbe503c0c7008fbf124223a6062aaffb1b55f0bba5a5d2568 |
+| evidence/54-audit-state.txt | Step 5 Audit attempt | 73d36359007a1d00edaf1ddb0c2bf8e82c68c5c64862228611aa9a342efee067 |
+| evidence/54-audit-uninstall.txt | Step 5 Audit attempt | 7809db49939ea15237130a1ca14fff2c35064dcd63449d8f997612189d057a09 |
+| evidence/54-compare.txt | Step 5 Audit attempt | 3b96c0587eeb1b855b887cb30100388b0a406b0f42d50bc894ea1d674553900a |
+| evidence/54-schema-create.txt | Step 5 Audit attempt | beb82f6fb128db18722e0c872ba70c879cdc15c2f6de7ef188a3e3583c81de4d |
+| evidence/REPORT-08.md | Step 5 Audit attempt | 2ca9903f46964e7931cd88a3cd4e817d68fb0546ae28edaba357b7113c62ec7b |
+| sql/54-audit-state.sql | Step 5 Audit attempt | 0fbfb28480d97a4cd0fd3471d370141dcc0593ed33b53e3e31ec91ff0a0cd3af |
+| sql/54-drop-schema.sql | Step 5 Audit attempt | 94678d76ff2eeb93d7b3f9ed15288edba03a1d6c57f19b9f846716988d8a8430 |
+| sql/54-error-log.sql | Step 5 Audit attempt | 2bd265848fe5f57d36d362b84c570b6055750341cd3d1c9f2243e379c72b4c83 |
