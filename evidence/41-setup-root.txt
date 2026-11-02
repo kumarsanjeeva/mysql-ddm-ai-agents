@@ -1,0 +1,201 @@
+--------------
+CREATE SCHEMA ddv_probe2
+--------------
+
+Query OK, 1 row affected (0.092 sec)
+
+--------------
+USE ddv_probe2
+--------------
+
+Query OK, 0 rows affected (0.008 sec)
+
+--------------
+CREATE TABLE probe_people (
+  id INT PRIMARY KEY,
+  email VARCHAR(100),
+  phone VARCHAR(20),
+  notes TEXT
+)
+--------------
+
+Query OK, 0 rows affected (0.460 sec)
+
+--------------
+INSERT INTO probe_people VALUES
+  (1, 'mark.zzzz@example.test', '555-0101', 'note one'),
+  (2, 'mark.aaaa@example.test', '777-0101', 'note two'),
+  (3, 'lena.mmmm@example.test', '555-0303', 'note three')
+--------------
+
+Query OK, 3 rows affected (0.044 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.004 sec)
+
+--------------
+CREATE MASKING POLICY probe_mask_email(email_column)
+CASE WHEN CURRENT_ROLE_IN('r_billing_admin')
+     THEN email_column
+     ELSE mask_inner(email_column, 1, 13, '*')
+END
+--------------
+
+Query OK, 0 rows affected (0.036 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+CREATE MASKING POLICY probe_mask_phone(phone_column)
+CASE WHEN CURRENT_ROLE_IN('r_billing_admin')
+     THEN phone_column
+     ELSE mask_inner(phone_column, 0, 4, '*')
+END
+--------------
+
+Query OK, 0 rows affected (0.029 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.002 sec)
+
+--------------
+ALTER TABLE probe_people MODIFY COLUMN email VARCHAR(100) MASKING POLICY probe_mask_email
+--------------
+
+Query OK, 0 rows affected (0.094 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+--------------
+ALTER TABLE probe_people MODIFY COLUMN phone VARCHAR(20) MASKING POLICY probe_mask_phone
+--------------
+
+Query OK, 0 rows affected (0.101 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.004 sec)
+
+--------------
+GRANT 'r_billing_admin'@'%' TO 'ddv_owner'@'%'
+--------------
+
+Query OK, 0 rows affected (0.074 sec)
+
+--------------
+SET DEFAULT ROLE 'r_billing_admin'@'%' TO 'ddv_owner'@'%'
+--------------
+
+Query OK, 0 rows affected (0.063 sec)
+
+--------------
+GRANT SELECT ON ddv_probe2.probe_people TO 'ddv_owner'@'%'
+--------------
+
+Query OK, 0 rows affected (0.018 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+CREATE DEFINER='ddv_owner'@'%' SQL SECURITY DEFINER VIEW v_owner_definer AS SELECT * FROM probe_people
+--------------
+
+Query OK, 0 rows affected (0.035 sec)
+
+--------------
+CREATE DEFINER='ddv_owner'@'%' PROCEDURE p_owner() SQL SECURITY DEFINER SELECT * FROM probe_people
+--------------
+
+Query OK, 0 rows affected (0.059 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.003 sec)
+
+--------------
+GRANT SELECT (id, email, phone) ON ddv_probe2.probe_people TO 'ddv_agent'@'%'
+--------------
+
+Query OK, 0 rows affected (0.028 sec)
+
+--------------
+GRANT SELECT ON ddv_probe2.v_owner_definer TO 'ddv_agent'@'%'
+--------------
+
+Query OK, 0 rows affected (0.025 sec)
+
+--------------
+GRANT EXECUTE ON PROCEDURE ddv_probe2.p_owner TO 'ddv_agent'@'%'
+--------------
+
+Query OK, 0 rows affected (0.018 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+SHOW GRANTS FOR 'ddv_agent'@'%'
+--------------
+
++-----------------------------------------------------------------------------------------+
+| Grants for ddv_agent@%                                                                  |
++-----------------------------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `ddv_agent`@`%`                                                   |
+| GRANT SELECT (`email`, `id`, `phone`) ON `ddv_probe2`.`probe_people` TO `ddv_agent`@`%` |
+| GRANT SELECT ON `ddv_probe2`.`v_owner_definer` TO `ddv_agent`@`%`                       |
+| GRANT SELECT ON `ddv_support`.`customers` TO `ddv_agent`@`%`                            |
+| GRANT SELECT ON `ddv_support`.`orders` TO `ddv_agent`@`%`                               |
+| GRANT SELECT ON `ddv_support`.`payments` TO `ddv_agent`@`%`                             |
+| GRANT SELECT ON `ddv_support`.`support_tickets` TO `ddv_agent`@`%`                      |
+| GRANT EXECUTE ON PROCEDURE `ddv_probe2`.`p_owner` TO `ddv_agent`@`%`                    |
+| GRANT `r_support_agent`@`%` TO `ddv_agent`@`%`                                          |
++-----------------------------------------------------------------------------------------+
+9 rows in set (0.004 sec)
+
+--------------
+SHOW GRANTS FOR 'ddv_owner'@'%'
+--------------
+
++----------------------------------------------------------------+
+| Grants for ddv_owner@%                                         |
++----------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `ddv_owner`@`%`                          |
+| GRANT SELECT ON `ddv_probe2`.`probe_people` TO `ddv_owner`@`%` |
+| GRANT `r_billing_admin`@`%` TO `ddv_owner`@`%`                 |
++----------------------------------------------------------------+
+3 rows in set (0.003 sec)
+
+--------------
+SHOW CREATE VIEW ddv_probe2.v_owner_definer
+--------------
+
++-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------+----------------------+
+| View            | Create View                                                                                                                                                                                                                                                    | character_set_client | collation_connection |
++-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------+----------------------+
+| v_owner_definer | CREATE ALGORITHM=UNDEFINED DEFINER=`ddv_owner`@`%` SQL SECURITY DEFINER VIEW `v_owner_definer` AS select `probe_people`.`id` AS `id`,`probe_people`.`email` AS `email`,`probe_people`.`phone` AS `phone`,`probe_people`.`notes` AS `notes` from `probe_people` | utf8mb4              | utf8mb4_0900_ai_ci   |
++-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------+----------------------+
+1 row in set (0.011 sec)
+
+Bye

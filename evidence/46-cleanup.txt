@@ -1,0 +1,145 @@
+--------------
+REVOKE SELECT (id, email, phone) ON ddv_probe2.probe_people FROM 'ddv_agent'@'%'
+--------------
+
+Query OK, 0 rows affected (0.052 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.002 sec)
+
+--------------
+REVOKE SELECT ON ddv_probe2.v_owner_definer FROM 'ddv_agent'@'%'
+--------------
+
+Query OK, 0 rows affected (0.021 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+REVOKE EXECUTE ON PROCEDURE ddv_probe2.p_owner FROM 'ddv_agent'@'%'
+--------------
+
+Query OK, 0 rows affected (0.024 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+REVOKE SELECT, INSERT, DELETE ON ddv_probe2.probe_sink FROM 'ddv_agent'@'%'
+--------------
+
+Query OK, 0 rows affected (0.026 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.002 sec)
+
+--------------
+REVOKE SELECT ON ddv_probe2.probe_people FROM 'ddv_billing'@'%'
+--------------
+
+Query OK, 0 rows affected (0.023 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+REVOKE SELECT, INSERT, DELETE ON ddv_probe2.probe_sink FROM 'ddv_billing'@'%'
+--------------
+
+Query OK, 0 rows affected (0.024 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.002 sec)
+
+--------------
+REVOKE SELECT ON ddv_probe2.probe_people FROM 'ddv_owner'@'%'
+--------------
+
+Query OK, 0 rows affected (0.022 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+REVOKE EXECUTE ON PROCEDURE ddv_probe2.p_owner FROM 'ddv_owner'@'%'
+--------------
+
+Query OK, 0 rows affected (0.021 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+DROP SCHEMA ddv_probe2
+--------------
+
+Query OK, 4 rows affected (0.374 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.004 sec)
+
+--------------
+DROP MASKING POLICY IF EXISTS probe_mask_email
+--------------
+
+Query OK, 0 rows affected (0.031 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.002 sec)
+
+--------------
+DROP MASKING POLICY IF EXISTS probe_mask_phone
+--------------
+
+Query OK, 0 rows affected (0.022 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+DROP USER 'ddv_owner'@'%'
+--------------
+
+Query OK, 0 rows affected (0.046 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+Bye

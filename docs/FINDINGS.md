@@ -183,3 +183,95 @@ SHA-256 of every file in sql/, agent/, docs/ and evidence/, except this file. St
 | sql/20-fix-ticket-card.sql | Step 3 | 489731801b1da672280f9371f5c9cb5ab69ec26d8dc200aee9c21cd0ab5fe57a |
 | sql/23-snapshot.sql | Step 3 | 107750fe9546a320126e00442091a88e2ad3450e767dedab45c35bb3ea659c12 |
 | sql/24-unexpected-queries.sql | Step 3 | 3d6adb951ed7704952b531fc30639efd4e2136516bdfd77cf6cb092f38802be7 |
+
+## 11. Step 4 and 4b findings (F21 onward)
+
+Added after the earlier sections; earlier entries are unchanged. All are captured unless stated. Step 4 files are 30-38, Step 4b files are 40-48.
+
+- **F21.** (captured) ORDER BY email returned ids 3,1,2 for the agent and 3,2,1 for billing. (32-probes-agent.txt, 32-probes-billing.txt)
+- **F22.** (captured) GROUP BY phone gave 2 groups for the agent and 3 for billing; COUNT(DISTINCT phone) 2 against 3. (32-probes-agent.txt, 32-probes-billing.txt)
+- **F23.** (captured) The self-join on phone gave 5 rows for the agent, including the pairs (1,2) and (2,1), and 3 rows for billing. (32-probes-agent.txt, 32-probes-billing.txt)
+- **F24.** (captured) MIN/MAX(email) and LEFT(email,6) returned masked text for the agent. (32-probes-agent.txt)
+- **F25.** (captured) WHERE phone='777-0101' and email LIKE 'mark.a%' returned nothing for the agent and id 2 for billing. (32-probes-agent.txt, 32-probes-billing.txt)
+- **F26.** (captured) Warning 1052 Column 'phone' in group statement is ambiguous appears for both agent and billing on the GROUP BY probe. The cause is undetermined (reasoning: the policy expression). (32-probes-agent.txt, 32-probes-billing.txt)
+- **F27.** (captured) A DEFINER view and procedure with definer root (no role) returned masked rows to both agent and billing. The INVOKER view gave billing real values and the agent error 1356. The agent read notes through the definer view and the procedure without base-table SELECT. (33-views-routines-agent.txt, 33-views-routines-billing.txt)
+- **F28.** (captured) The agent's INSERT ... SELECT into an unmasked table stored masked values. Billing had no grant on that sink. (34-copy-out.txt)
+- **F29.** (captured) With SELECT (id, email, phone), SELECT notes gave 1143 and SELECT * gave 1142. (35-column-grant.txt)
+- **F30.** (captured) Audit and Firewall are not installed. DLLs and install scripts exist. Before Step 4b only the plugin-style scripts had been read. (36-audit-firewall-check.txt, 36-share-plugin-listing.txt)
+- **F31.** (captured) ddv_owner (role _billing_admin as default role, SELECT on the table) selecting probe_people in ddv_probe2 returned real email, phone and notes. (41-owner-select.txt, 41-setup-root.txt)
+- **F32.** (captured) The agent's first CALL p_owner() failed with ERROR 1370 (execute command denied to user 'ddv_owner'@'%' for routine 'ddv_probe2.p_owner'). The EXECUTE grant to ddv_owner was added afterwards and the whole agent file was re-run. Both captures are kept. (41-agent-select.txt, 41-owner-execute-grant.txt, 41-agent-select-rerun.txt)
+- **F33.** (captured) With definer ddv_owner, _owner_definer returned real email, phone and notes to the agent, who held only SELECT (id, email, phone) on the base table and SELECT on the view. After the EXECUTE grant, CALL p_owner() also returned real values. (41-agent-select.txt, 41-agent-select-rerun.txt)
+- **F34.** (captured) As the agent, SELECT notes FROM probe_people gave ERROR 1143 and SELECT notes FROM v_owner_definer returned the three notes, in both captures. (41-agent-select.txt, 41-agent-select-rerun.txt)
+- **F35.** (captured) Copy-out chain in ddv_probe2: the agent's INSERT ... SELECT stored masked values in probe_sink; billing then read the masked values, deleted the 3 rows and inserted from the base table; the agent's next SELECT * FROM probe_sink returned real values. (42-copy-out-1-agent-insert.txt to 42-copy-out-5-agent-select.txt)
+- **F36.** (captured) ALTER TABLE probe_idx MODIFY COLUMN code ... MASKING POLICY probe_mask_phone on an indexed column gave ERROR 6572 Column 'code' cannot have a MASKING POLICY and have an index. CREATE INDEX idx_phone ON probe_people (phone) on a masked column gave ERROR 6572 Column 'phone' cannot have a MASKING POLICY and have an index. (43-indexed-columns.txt)
+- **F37.** (captured script text) The audit component install script creates tables udit_log_filter and udit_log_user and runs INSTALL COMPONENT "file://component_audit_log"; its uninstall script uninstalls the component and drops both tables. The first 80 lines of the firewall component script create irewall_group_allowlist, irewall_groups and irewall_membership, run INSTALL COMPONENT 'file://component_firewall' SET PERSIST component_firewall.database = DATABASE() and start creating stored procedures. Nothing was run. (45-component-scripts.txt)
+- **F38.** (captured) After cleanup, ddv_probe2, its policies and ddv_owner are gone; the before and after snapshots compare equal after stripping timings. (46-cleanup.txt, 47-after.txt, 48-compare.txt)
+
+Limits added: three rows and each result seen once. Masking changes sorting, grouping, distinct counts and joins (reasoning, for what that means to an agent). A column grant on the base table does not cover views (reasoning).
+
+## 12. Evidence index additions (Step 4 and Step 4b)
+
+Files in sql/, agent/ and evidence/ not listed in section 10. Step 4 = commit 3875686; Step 4b = the Step 4b commit. Section 10 is unchanged.
+
+| File | Step | SHA-256 |
+|---|---|---|
+| evidence/30-before.txt | Step 4 | 39cdf2fae5ff07cfd318e8bcae7beb9b0167f3560290362d704895b60b1a396c |
+| evidence/31-probe-setup.txt | Step 4 | e53b6ac05ae0b6a56b11b460d33d7032ec704b4950822a956d24a14a8cf40b58 |
+| evidence/32-probes-agent.txt | Step 4 | ab4c7e02faebe5a4534e889fccf5ee128d8231c1eb9b0c91a1b253fa0adc758c |
+| evidence/32-probes-billing.txt | Step 4 | 00097ae3ab8d377cc6ef518d9b74993dbfe7cbb573d6bef1455a27b5cf13a163 |
+| evidence/33-regrant-root.txt | Step 4 | 2d794efb62f5a30e1629722f83a5e679de6c4d8f8593b2b29d459fee1dbbb1cd |
+| evidence/33-views-routines-agent.txt | Step 4 | aaa6c1e2d76c46bedccf707f49dddbc34a3aa2373dc71fd66206ce790294570d |
+| evidence/33-views-routines-billing.txt | Step 4 | f6372009aab57d5f50780622f3d44cae7f66658a105525d5f1d426aaa35e2a42 |
+| evidence/33-views-setup-root.txt | Step 4 | 2628ddaeabbbc26885c23aa514b3167cbd979c1bd735247a8034039d487cd34f |
+| evidence/34-copy-out.txt | Step 4 | f63e0d28a16e0b7ce393eb9cdba34f34b4741a3bbce2933c76c1ab54648c3530 |
+| evidence/35-column-grant.txt | Step 4 | f2011f0e2760552498137dc0990021f2f944764691133a5daeefdaf246f6a24d |
+| evidence/36-audit-firewall-check.txt | Step 4 | cf36bfb2a81575c2a6cc7042159225c2ea6ad6f4e35340a2b61d5380686f4689 |
+| evidence/36-share-plugin-listing.txt | Step 4 | 1680f1626311a5c308d44253761c4f3d70718bccecb141a74bc3b94c12ba2921 |
+| evidence/37-cleanup.txt | Step 4 | 40228a9820c598d1c99de171b5f0e777c04c23009344f7a5222c84a98eec25e4 |
+| evidence/38-after.txt | Step 4 | f73704d7a77d5b71b39fb2454dc92cf8527f01ae9f5f3c11aa7a90c782766839 |
+| evidence/40-before.txt | Step 4b | d28fa19560f278513c0c585946cb8721ef1c069383490a6baa56e69c81babd4f |
+| evidence/41-agent-select.txt | Step 4b | 51ae20186405a0dd370198731117964db038e19e9130e992ed73410ab7f0b0a2 |
+| evidence/41-agent-select-rerun.txt | Step 4b | c9f0146b5ca1937db2f07c3c9524e80de037e1096ec16e0f069fd890ceed55c4 |
+| evidence/41-owner-execute-grant.txt | Step 4b | 8a5057d62f6c40165a3ae1eccee6c1677bc4dfc736bcbeae5812691b9721236a |
+| evidence/41-owner-select.txt | Step 4b | afa2d53185dac902a617bc274f3ef354e23170028d94b91a8265f35ce2f8beda |
+| evidence/41-setup-root.txt | Step 4b | 0d0212a29e32f6dda8fa35957beeafc90ba85e186084d924e8869f09d50b749e |
+| evidence/42-copy-out-1-agent-insert.txt | Step 4b | 20fab5f98e794a1246a41e448d8d4fefe98d7a6a7d2caded82c3f180f33fbe72 |
+| evidence/42-copy-out-2-billing-select.txt | Step 4b | 5bc8e99c2e790a736b5de91e2dee9b1a98b886270ab231ed81e2060503e9ce39 |
+| evidence/42-copy-out-3-billing-delete.txt | Step 4b | e5448f4d29f908dc841d133600041727ee936512b35938b19babff30d34edaaa |
+| evidence/42-copy-out-4-billing-insert.txt | Step 4b | b026e4dc27d3e50771f7855ebc689ffbf4dcb7d184044f943e6a15f82768dfae |
+| evidence/42-copy-out-5-agent-select.txt | Step 4b | e5af5a4cdc09c3e76f844946f10b9cd2a8f75e0aad2c55edff41ab19469401b9 |
+| evidence/42-copy-out-setup-root.txt | Step 4b | f74c6a7407e31905c40201a5ed244ff724a29b0a24ff70c6b78e717578713198 |
+| evidence/43-indexed-columns.txt | Step 4b | 39ef4525b4872df3a9c32c3af8f93228bbd79890704871cf02ff39246f455cdc |
+| evidence/45-component-scripts.txt | Step 4b | 95cf356446347452f9dba1364075785c70feea64b3223d86d66347c4a53f2d96 |
+| evidence/46-cleanup.txt | Step 4b | 544dc985305a5f40311b51c3f8ec5c6fbe937ebf79dbf4cd43f2fad11360377b |
+| evidence/47-after.txt | Step 4b | 539c24d9781afb35371f14c526936465a201cacd7223c1b2b4db8e3df89c0330 |
+| evidence/48-compare.txt | Step 4b | 74856b3644a545970127a7a021a07c160a8934ee818652a60bbc7245cda61f7c |
+| evidence/REPORT-04.md | Step 4 | 17791051219975f13e9d322e044cc1ad791c0a9b314c30058eb3a85760083faf |
+| evidence/REPORT-05.md | Step 4b | 2aae3565634fa5ce965a80ef26fd368a039370a32435093df87ad548ce522710 |
+| sql/30-snapshot.sql | Step 4 | f0276fc5d87f10542bb5a5606a4c291592d84901cc98cac494a29890f8fdb3d9 |
+| sql/31-probe-setup.sql | Step 4 | e2717cfc6fa4ac777bc341a1ee27f38f9d7ea077340d7e855fbfe297ba60012f |
+| sql/32-probes.sql | Step 4 | 357828a70dc99ccbb6cc58a741ba0f672c28436e74a6fc076dd0abb9936a3cdc |
+| sql/33-regrant.sql | Step 4 | cce2baf7f1df55716f71eebb4c5030a42f793e5544b00e04307fc56977811296 |
+| sql/33-views-probes.sql | Step 4 | bd2a988f4962983fdf6eef436135e20f0d33e344bab4079c0ab0540c2c3dd696 |
+| sql/33-views-setup.sql | Step 4 | 1b56cf3bc4a2c05ebc079cc4d77a4e4badc4f593dacf4f5f412a2fb913cfbf29 |
+| sql/34-sink-agent.sql | Step 4 | 6e0c3ac264eea8a8385c1ada24866702ae47c13d87dcdb306ad717a16fbbe124 |
+| sql/34-sink-billing.sql | Step 4 | f7b772f01130f293645d731d6a39cfd585be0d51221231a1c07268b4e92acaaa |
+| sql/34-sink-setup.sql | Step 4 | d6e5786f218c22507ae44baecdeac2309a2a4d08726c5c22299cc04070b3141d |
+| sql/35-column-grant-agent.sql | Step 4 | cbe942e3154f25009e7d235f8b9ff7f55012ef04249788ff37055f97e50d254c |
+| sql/35-column-grant-setup.sql | Step 4 | a1f54479401814eda818b4ee44bea4e971a0b9d6b515ea158ae48363bf610e7d |
+| sql/36-audit-firewall-check.sql | Step 4 | 091b8d1dfd3b679c49eed4c8fda8219e425bf3c7185779633bc347d0223be481 |
+| sql/37-cleanup.sql | Step 4 | a112d6935909d848339b7c9b5a4b0717f0f99c2efef0e697a9f1db96a21b5e28 |
+| sql/40-snapshot.sql | Step 4b | 7fde7bdbfeba8205cdb5c177d406e5f3448f78209bc39b1f03e8d26c8b7a8be0 |
+| sql/41-agent-select.sql | Step 4b | 40e923f695052a3988b451fdf1015995258ef7ce44ebea5a7c3723ab7a98b4ea |
+| sql/41-create-owner.template.sql | Step 4b | e1e30b1f5172a3c5251e1f68a807b77a68b3ad8494e81b1aa7787e17e45c4763 |
+| sql/41-owner-execute-grant.sql | Step 4b | dd3878a819ee84b33fba62c8176f92a39fa3de1be01993b920dc17daae4be31e |
+| sql/41-owner-select.sql | Step 4b | 8ee5f38ad5625d63f1f325c5813208381ee9dff411cebed89ee80c8a501e63a1 |
+| sql/41-owner-setup.sql | Step 4b | 66d49c4ddb74bb68c27443b554034a070144e90518f00aa4d9104bbf4e089bde |
+| sql/42-copy-out-1-agent-insert.sql | Step 4b | 0053923d5e1f44fa8df08b0bea81c514b9a16769fb2f4d9d94b82ad795d5694b |
+| sql/42-copy-out-2-billing-select.sql | Step 4b | 24b4c2238512cfb774c66d43e50f1b547c0ba10bd32603bd14e6aef753a223dc |
+| sql/42-copy-out-3-billing-delete.sql | Step 4b | 739a9c47efe534c14177e2e69715f92181e676a91e1d4de0728592dda282d981 |
+| sql/42-copy-out-4-billing-insert.sql | Step 4b | 71cfb60eda866cccbfd0a20eb00fb4722d03a474c4f52bfa782d1068f6ae50bf |
+| sql/42-copy-out-5-agent-select.sql | Step 4b | 24b4c2238512cfb774c66d43e50f1b547c0ba10bd32603bd14e6aef753a223dc |
+| sql/42-copy-out-setup.sql | Step 4b | 9e4bd9c86f63965fb43f1e909a09a972bc67983734daf17879fc7910c324c38f |
+| sql/43-indexed-columns.sql | Step 4b | ffc7e196ea33384c8135d7b222c1df68f80c9ec46ef712da4c3e82d7fe51ae8e |
+| sql/46-cleanup.sql | Step 4b | 8aa78a47407445cddc62eed942c940d7529c4e40ad70d8c153d47fb760194380 |

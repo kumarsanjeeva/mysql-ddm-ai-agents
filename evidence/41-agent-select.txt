@@ -1,0 +1,54 @@
+--------------
+USE ddv_probe2
+--------------
+
+Query OK, 0 rows affected (0.013 sec)
+
+--------------
+SELECT CURRENT_USER(), CURRENT_ROLE()
+--------------
+
++----------------+-----------------------+
+| CURRENT_USER() | CURRENT_ROLE()        |
++----------------+-----------------------+
+| ddv_agent@%    | `r_support_agent`@`%` |
++----------------+-----------------------+
+1 row in set (0.004 sec)
+
+--------------
+SELECT * FROM v_owner_definer
+--------------
+
++----+------------------------+----------+------------+
+| id | email                  | phone    | notes      |
++----+------------------------+----------+------------+
+|  1 | mark.zzzz@example.test | 555-0101 | note one   |
+|  2 | mark.aaaa@example.test | 777-0101 | note two   |
+|  3 | lena.mmmm@example.test | 555-0303 | note three |
++----+------------------------+----------+------------+
+3 rows in set (0.011 sec)
+
+--------------
+CALL p_owner()
+--------------
+
+ERROR 1370 (42000) at line 4: execute command denied to user 'ddv_owner'@'%' for routine 'ddv_probe2.p_owner'
+--------------
+SELECT notes FROM probe_people
+--------------
+
+ERROR 1143 (42000) at line 5: SELECT command denied to user 'ddv_agent'@'localhost' for column 'notes' in table 'probe_people'
+--------------
+SELECT notes FROM v_owner_definer
+--------------
+
++------------+
+| notes      |
++------------+
+| note one   |
+| note two   |
+| note three |
++------------+
+3 rows in set (0.003 sec)
+
+Bye

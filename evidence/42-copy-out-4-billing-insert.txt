@@ -1,0 +1,25 @@
+--------------
+USE ddv_probe2
+--------------
+
+Query OK, 0 rows affected (0.002 sec)
+
+--------------
+SELECT CURRENT_USER(), CURRENT_ROLE()
+--------------
+
++----------------+-----------------------+
+| CURRENT_USER() | CURRENT_ROLE()        |
++----------------+-----------------------+
+| ddv_billing@%  | `r_billing_admin`@`%` |
++----------------+-----------------------+
+1 row in set (0.002 sec)
+
+--------------
+INSERT INTO probe_sink SELECT id, email, phone FROM probe_people
+--------------
+
+Query OK, 3 rows affected (0.078 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+Bye

@@ -1,0 +1,27 @@
+--------------
+GRANT EXECUTE ON PROCEDURE ddv_probe2.p_owner TO 'ddv_owner'@'%'
+--------------
+
+Query OK, 0 rows affected (0.196 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.006 sec)
+
+--------------
+SHOW GRANTS FOR 'ddv_owner'@'%'
+--------------
+
++----------------------------------------------------------------------+
+| Grants for ddv_owner@%                                               |
++----------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `ddv_owner`@`%`                                |
+| GRANT SELECT ON `ddv_probe2`.`probe_people` TO `ddv_owner`@`%`       |
+| GRANT EXECUTE ON PROCEDURE `ddv_probe2`.`p_owner` TO `ddv_owner`@`%` |
+| GRANT `r_billing_admin`@`%` TO `ddv_owner`@`%`                       |
++----------------------------------------------------------------------+
+4 rows in set (0.012 sec)
+
+Bye

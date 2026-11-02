@@ -1,0 +1,24 @@
+--------------
+USE ddv_probe2
+--------------
+
+Query OK, 0 rows affected (0.004 sec)
+
+--------------
+SELECT CURRENT_USER(), CURRENT_ROLE()
+--------------
+
++----------------+-----------------------+
+| CURRENT_USER() | CURRENT_ROLE()        |
++----------------+-----------------------+
+| ddv_billing@%  | `r_billing_admin`@`%` |
++----------------+-----------------------+
+1 row in set (0.003 sec)
+
+--------------
+DELETE FROM probe_sink
+--------------
+
+Query OK, 3 rows affected (0.042 sec)
+
+Bye

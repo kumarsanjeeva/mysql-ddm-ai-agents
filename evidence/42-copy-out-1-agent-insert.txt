@@ -1,0 +1,38 @@
+--------------
+USE ddv_probe2
+--------------
+
+Query OK, 0 rows affected (0.002 sec)
+
+--------------
+SELECT CURRENT_USER(), CURRENT_ROLE()
+--------------
+
++----------------+-----------------------+
+| CURRENT_USER() | CURRENT_ROLE()        |
++----------------+-----------------------+
+| ddv_agent@%    | `r_support_agent`@`%` |
++----------------+-----------------------+
+1 row in set (0.002 sec)
+
+--------------
+INSERT INTO probe_sink SELECT id, email, phone FROM probe_people
+--------------
+
+Query OK, 3 rows affected (0.068 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+--------------
+SELECT * FROM probe_sink
+--------------
+
++------+------------------------+----------+
+| id   | email                  | phone    |
++------+------------------------+----------+
+|    1 | m********@example.test | ****0101 |
+|    2 | m********@example.test | ****0101 |
+|    3 | l********@example.test | ****0303 |
++------+------------------------+----------+
+3 rows in set (0.002 sec)
+
+Bye
