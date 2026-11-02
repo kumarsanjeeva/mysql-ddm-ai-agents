@@ -1,0 +1,72 @@
+--------------
+USE ddv_probe
+--------------
+
+Query OK, 0 rows affected (0.002 sec)
+
+--------------
+SELECT CURRENT_USER(), CURRENT_ROLE()
+--------------
+
++----------------+-----------------------+
+| CURRENT_USER() | CURRENT_ROLE()        |
++----------------+-----------------------+
+| ddv_billing@%  | `r_billing_admin`@`%` |
++----------------+-----------------------+
+1 row in set (0.001 sec)
+
+--------------
+SELECT * FROM v_people_definer
+--------------
+
++----+------------------------+----------+------------+
+| id | email                  | phone    | notes      |
++----+------------------------+----------+------------+
+|  1 | m********@example.test | ****0101 | note one   |
+|  2 | m********@example.test | ****0101 | note two   |
+|  3 | l********@example.test | ****0303 | note three |
++----+------------------------+----------+------------+
+3 rows in set (0.011 sec)
+
+--------------
+SELECT * FROM v_people_invoker
+--------------
+
++----+------------------------+----------+------------+
+| id | email                  | phone    | notes      |
++----+------------------------+----------+------------+
+|  1 | mark.zzzz@example.test | 555-0101 | note one   |
+|  2 | mark.aaaa@example.test | 777-0101 | note two   |
+|  3 | lena.mmmm@example.test | 555-0303 | note three |
++----+------------------------+----------+------------+
+3 rows in set (0.003 sec)
+
+--------------
+CALL p_people()
+--------------
+
++----+------------------------+----------+------------+
+| id | email                  | phone    | notes      |
++----+------------------------+----------+------------+
+|  1 | m********@example.test | ****0101 | note one   |
+|  2 | m********@example.test | ****0101 | note two   |
+|  3 | l********@example.test | ****0303 | note three |
++----+------------------------+----------+------------+
+3 rows in set (0.003 sec)
+
+Query OK, 0 rows affected (0.003 sec)
+
+--------------
+SELECT * FROM probe_people
+--------------
+
++----+------------------------+----------+------------+
+| id | email                  | phone    | notes      |
++----+------------------------+----------+------------+
+|  1 | mark.zzzz@example.test | 555-0101 | note one   |
+|  2 | mark.aaaa@example.test | 777-0101 | note two   |
+|  3 | lena.mmmm@example.test | 555-0303 | note three |
++----+------------------------+----------+------------+
+3 rows in set (0.002 sec)
+
+Bye

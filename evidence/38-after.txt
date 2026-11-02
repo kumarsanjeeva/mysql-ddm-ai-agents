@@ -1,0 +1,50 @@
+--------------
+SELECT policy_name FROM mysql.column_masking_policies ORDER BY 1
+--------------
+
++-----------------+
+| policy_name     |
++-----------------+
+| mask_email      |
+| mask_phone      |
+| sup_mask_card   |
+| sup_mask_email  |
+| sup_mask_phone  |
+| sup_mask_tax_id |
+| sup_mask_upi    |
++-----------------+
+7 rows in set (0.003 sec)
+
+--------------
+SHOW GRANTS FOR 'ddv_agent'@'%'
+--------------
+
++--------------------------------------------------------------------+
+| Grants for ddv_agent@%                                             |
++--------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `ddv_agent`@`%`                              |
+| GRANT SELECT ON `ddv_support`.`customers` TO `ddv_agent`@`%`       |
+| GRANT SELECT ON `ddv_support`.`orders` TO `ddv_agent`@`%`          |
+| GRANT SELECT ON `ddv_support`.`payments` TO `ddv_agent`@`%`        |
+| GRANT SELECT ON `ddv_support`.`support_tickets` TO `ddv_agent`@`%` |
+| GRANT `r_support_agent`@`%` TO `ddv_agent`@`%`                     |
++--------------------------------------------------------------------+
+6 rows in set (0.001 sec)
+
+--------------
+SHOW GRANTS FOR 'ddv_billing'@'%'
+--------------
+
++----------------------------------------------------------------------+
+| Grants for ddv_billing@%                                             |
++----------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `ddv_billing`@`%`                              |
+| GRANT SELECT ON `ddv_support`.`customers` TO `ddv_billing`@`%`       |
+| GRANT SELECT ON `ddv_support`.`orders` TO `ddv_billing`@`%`          |
+| GRANT SELECT ON `ddv_support`.`payments` TO `ddv_billing`@`%`        |
+| GRANT SELECT ON `ddv_support`.`support_tickets` TO `ddv_billing`@`%` |
+| GRANT `r_billing_admin`@`%` TO `ddv_billing`@`%`                     |
++----------------------------------------------------------------------+
+6 rows in set (0.002 sec)
+
+Bye

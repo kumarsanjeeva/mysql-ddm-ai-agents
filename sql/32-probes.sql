@@ -1,0 +1,11 @@
+USE ddv_probe;
+SELECT CURRENT_USER(), CURRENT_ROLE();
+SELECT id, email FROM probe_people ORDER BY email;
+SELECT phone, COUNT(*) FROM probe_people GROUP BY phone;
+SHOW WARNINGS;
+SELECT COUNT(DISTINCT phone) FROM probe_people;
+SELECT MIN(email), MAX(email) FROM probe_people;
+SELECT a.id, b.id FROM probe_people a JOIN probe_people b ON a.phone = b.phone ORDER BY a.id, b.id;
+SELECT id FROM probe_people WHERE phone = '777-0101';
+SELECT id FROM probe_people WHERE email LIKE 'mark.a%';
+SELECT id, LENGTH(email), LEFT(email, 6) FROM probe_people;

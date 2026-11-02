@@ -1,0 +1,81 @@
+--- share (matching *audit* / *firewall*): name  bytes
+share\audit_log_component_filter_install.sql  600
+share\audit_log_component_filter_uninstall.sql  454
+share\audit_log_filter_uninstall.sql  961
+share\audit_log_filter_win_install.sql  1460
+share\firewall_component_to_plugin.sql  2446
+share\firewall_plugin_to_component.sql  14002
+share\firewall_profile_migration.sql  2372
+share\install_component_firewall.sql  9779
+share\uninstall_component_firewall.sql  790
+share\uninstall_firewall.sql  1062
+share\win_install_firewall.sql  12608
+--- lib\plugin (matching *audit* / *firewall*): name  bytes
+lib\plugin\audit_log.dll  819840
+lib\plugin\component_audit_api_message_emit.dll  36528
+lib\plugin\component_audit_log.dll  782488
+lib\plugin\component_firewall.dll  345240
+lib\plugin\firewall.dll  433792
+
+===== share\audit_log_filter_win_install.sql (first 40 lines)
+# Copyright (c) 2016, 2026, Oracle and/or its affiliates.
+
+CREATE TABLE IF NOT EXISTS audit_log_filter(NAME VARCHAR(64) BINARY NOT NULL PRIMARY KEY, FILTER JSON NOT NULL) engine= InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_ci;
+CREATE TABLE IF NOT EXISTS audit_log_user(USER VARCHAR(32) BINARY NOT NULL, HOST VARCHAR(255) CHARACTER SET ASCII NOT NULL, FILTERNAME VARCHAR(64) BINARY NOT NULL, PRIMARY KEY (USER, HOST), FOREIGN KEY (FILTERNAME) REFERENCES audit_log_filter(NAME)) engine= InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_ci;
+
+INSTALL PLUGIN audit_log SONAME 'audit_log.dll';
+
+CREATE FUNCTION audit_log_filter_set_filter RETURNS STRING SONAME 'audit_log.dll';
+CREATE FUNCTION audit_log_filter_remove_filter RETURNS STRING SONAME 'audit_log.dll';
+CREATE FUNCTION audit_log_filter_set_user RETURNS STRING SONAME 'audit_log.dll';
+CREATE FUNCTION audit_log_filter_remove_user RETURNS STRING SONAME 'audit_log.dll';
+CREATE FUNCTION audit_log_filter_flush RETURNS STRING SONAME 'audit_log.dll';
+CREATE FUNCTION audit_log_read_bookmark RETURNS STRING SONAME 'audit_log.dll';
+CREATE FUNCTION audit_log_read RETURNS STRING SONAME 'audit_log.dll';
+CREATE FUNCTION audit_log_encryption_password_set RETURNS INTEGER SONAME 'audit_log.dll';
+CREATE FUNCTION audit_log_encryption_password_get RETURNS STRING SONAME 'audit_log.dll';
+CREATE FUNCTION audit_log_rotate RETURNS STRING SONAME 'audit_log.dll';
+
+SELECT audit_log_filter_flush() AS 'Result';
+
+===== share\win_install_firewall.sql (first 40 lines)
+# Copyright (c) 2015, 2026, Oracle and/or its affiliates.
+
+# Note : If this file is being modified, please also modify
+# the file(s) present in the src/scripts/firewall folder as needed.
+
+# WARNING: If the .sql files are changed in a patch release, then it is
+# possible that the Firewall plugin, after a downgrade, will not work as intended.
+# Please try to avoid changes in patch releases.
+
+/* =================== MYSQL FIREWALL INSTALLATION SCRIPT =================== */
+
+/* queries allowed for particular userhost */
+CREATE TABLE IF NOT EXISTS
+firewall_whitelist(
+	USERHOST VARCHAR(288) NOT NULL,
+	RULE text NOT NULL,
+	ID INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY
+) engine= InnoDB;
+
+/* queries allowed for particular usergroup */
+CREATE TABLE IF NOT EXISTS
+firewall_group_allowlist(
+	NAME VARCHAR(288) NOT NULL,
+	RULE text NOT NULL,
+	ID INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY
+) engine= InnoDB;
+
+/* info on users registered in firewall */
+CREATE TABLE IF NOT EXISTS
+firewall_users(
+USERHOST VARCHAR(288) PRIMARY KEY,
+MODE ENUM ('OFF', 'RECORDING', 'PROTECTING', 'RESET', 'DETECTING') DEFAULT 'OFF'
+) engine= InnoDB;
+
+/* info on groups registered in firewall */
+CREATE TABLE IF NOT EXISTS
+firewall_groups(
+NAME VARCHAR(288) PRIMARY KEY,
+MODE ENUM ('OFF', 'RECORDING', 'PROTECTING', 'DETECTING') DEFAULT 'OFF',
+USERHOST VARCHAR(288)

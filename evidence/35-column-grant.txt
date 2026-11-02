@@ -1,0 +1,75 @@
+--------------
+REVOKE SELECT ON ddv_probe.probe_people FROM 'ddv_agent'@'%'
+--------------
+
+Query OK, 0 rows affected (0.063 sec)
+
+--------------
+GRANT SELECT (id, email, phone) ON ddv_probe.probe_people TO 'ddv_agent'@'%'
+--------------
+
+Query OK, 0 rows affected (0.034 sec)
+
+--------------
+SHOW GRANTS FOR 'ddv_agent'@'%'
+--------------
+
++----------------------------------------------------------------------------------------+
+| Grants for ddv_agent@%                                                                 |
++----------------------------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `ddv_agent`@`%`                                                  |
+| GRANT SELECT (`email`, `id`, `phone`) ON `ddv_probe`.`probe_people` TO `ddv_agent`@`%` |
+| GRANT SELECT, INSERT ON `ddv_probe`.`probe_sink` TO `ddv_agent`@`%`                    |
+| GRANT SELECT ON `ddv_probe`.`v_people_definer` TO `ddv_agent`@`%`                      |
+| GRANT SELECT ON `ddv_probe`.`v_people_invoker` TO `ddv_agent`@`%`                      |
+| GRANT SELECT ON `ddv_support`.`customers` TO `ddv_agent`@`%`                           |
+| GRANT SELECT ON `ddv_support`.`orders` TO `ddv_agent`@`%`                              |
+| GRANT SELECT ON `ddv_support`.`payments` TO `ddv_agent`@`%`                            |
+| GRANT SELECT ON `ddv_support`.`support_tickets` TO `ddv_agent`@`%`                     |
+| GRANT EXECUTE ON PROCEDURE `ddv_probe`.`p_people` TO `ddv_agent`@`%`                   |
+| GRANT `r_support_agent`@`%` TO `ddv_agent`@`%`                                         |
++----------------------------------------------------------------------------------------+
+11 rows in set (0.003 sec)
+
+Bye
+--------------
+USE ddv_probe
+--------------
+
+Query OK, 0 rows affected (0.002 sec)
+
+--------------
+SELECT CURRENT_USER(), CURRENT_ROLE()
+--------------
+
++----------------+-----------------------+
+| CURRENT_USER() | CURRENT_ROLE()        |
++----------------+-----------------------+
+| ddv_agent@%    | `r_support_agent`@`%` |
++----------------+-----------------------+
+1 row in set (0.001 sec)
+
+--------------
+SELECT id, email, phone FROM probe_people
+--------------
+
++----+------------------------+----------+
+| id | email                  | phone    |
++----+------------------------+----------+
+|  1 | m********@example.test | ****0101 |
+|  2 | m********@example.test | ****0101 |
+|  3 | l********@example.test | ****0303 |
++----+------------------------+----------+
+3 rows in set (0.003 sec)
+
+--------------
+SELECT notes FROM probe_people
+--------------
+
+ERROR 1143 (42000) at line 4: SELECT command denied to user 'ddv_agent'@'localhost' for column 'notes' in table 'probe_people'
+--------------
+SELECT * FROM probe_people
+--------------
+
+ERROR 1142 (42000) at line 5: SELECT command denied to user 'ddv_agent'@'localhost' for table 'probe_people'
+Bye

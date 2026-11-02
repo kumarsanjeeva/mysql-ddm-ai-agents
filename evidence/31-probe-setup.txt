@@ -1,0 +1,133 @@
+--------------
+CREATE SCHEMA ddv_probe
+--------------
+
+Query OK, 1 row affected (0.138 sec)
+
+--------------
+USE ddv_probe
+--------------
+
+Query OK, 0 rows affected (0.003 sec)
+
+--------------
+CREATE TABLE probe_people (
+  id INT PRIMARY KEY,
+  email VARCHAR(100),
+  phone VARCHAR(20),
+  notes TEXT
+)
+--------------
+
+Query OK, 0 rows affected (0.159 sec)
+
+--------------
+INSERT INTO probe_people VALUES
+  (1, 'mark.zzzz@example.test', '555-0101', 'note one'),
+  (2, 'mark.aaaa@example.test', '777-0101', 'note two'),
+  (3, 'lena.mmmm@example.test', '555-0303', 'note three')
+--------------
+
+Query OK, 3 rows affected (0.027 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+CREATE MASKING POLICY probe_mask_email(email_column)
+CASE WHEN CURRENT_ROLE_IN('r_billing_admin')
+     THEN email_column
+     ELSE mask_inner(email_column, 1, 13, '*')
+END
+--------------
+
+Query OK, 0 rows affected (0.019 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+CREATE MASKING POLICY probe_mask_phone(phone_column)
+CASE WHEN CURRENT_ROLE_IN('r_billing_admin')
+     THEN phone_column
+     ELSE mask_inner(phone_column, 0, 4, '*')
+END
+--------------
+
+Query OK, 0 rows affected (0.022 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+ALTER TABLE probe_people MODIFY COLUMN email VARCHAR(100) MASKING POLICY probe_mask_email
+--------------
+
+Query OK, 0 rows affected (0.053 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+--------------
+ALTER TABLE probe_people MODIFY COLUMN phone VARCHAR(20) MASKING POLICY probe_mask_phone
+--------------
+
+Query OK, 0 rows affected (0.042 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+GRANT SELECT ON ddv_probe.probe_people TO 'ddv_agent'@'%', 'ddv_billing'@'%'
+--------------
+
+Query OK, 0 rows affected (0.030 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+SELECT * FROM mysql.column_masking_policies WHERE policy_name LIKE 'probe%'
+--------------
+
++------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+------------+----------------+
+| policy_name      | expression                                                                                                                                                                | argument     | extra_info | schema_version |
++------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+------------+----------------+
+| probe_mask_email | (case when current_role_in(_utf8mb4'r_billing_admin') then `email_column` else mask_inner(`email_column` AS `email_column`,1 AS `1`,13 AS `13`,_utf8mb4'*' AS `'*'`) end) | email_column | []         |              1 |
+| probe_mask_phone | (case when current_role_in(_utf8mb4'r_billing_admin') then `phone_column` else mask_inner(`phone_column` AS `phone_column`,0 AS `0`,4 AS `4`,_utf8mb4'*' AS `'*'`) end)   | phone_column | []         |              1 |
++------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+------------+----------------+
+2 rows in set (0.005 sec)
+
+--------------
+SHOW CREATE TABLE ddv_probe.probe_people
+--------------
+
++--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Table        | Create Table                                                                                                                                                                                                                                                                                            |
++--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| probe_people | CREATE TABLE `probe_people` (
+  `id` int NOT NULL,
+  `email` varchar(100) MASKING POLICY `probe_mask_email` DEFAULT NULL,
+  `phone` varchar(20) MASKING POLICY `probe_mask_phone` DEFAULT NULL,
+  `notes` text,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci |
++--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+1 row in set (0.003 sec)
+
+Bye

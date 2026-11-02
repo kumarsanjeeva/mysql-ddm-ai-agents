@@ -1,0 +1,97 @@
+--------------
+REVOKE SELECT (id, email, phone) ON ddv_probe.probe_people FROM 'ddv_agent'@'%'
+--------------
+
+Query OK, 0 rows affected (0.029 sec)
+
+--------------
+REVOKE SELECT, INSERT ON ddv_probe.probe_sink FROM 'ddv_agent'@'%'
+--------------
+
+Query OK, 0 rows affected (0.022 sec)
+
+--------------
+REVOKE SELECT ON ddv_probe.v_people_definer FROM 'ddv_agent'@'%'
+--------------
+
+Query OK, 0 rows affected (0.029 sec)
+
+--------------
+REVOKE SELECT ON ddv_probe.v_people_invoker FROM 'ddv_agent'@'%'
+--------------
+
+Query OK, 0 rows affected (0.015 sec)
+
+--------------
+REVOKE EXECUTE ON PROCEDURE ddv_probe.p_people FROM 'ddv_agent'@'%'
+--------------
+
+Query OK, 0 rows affected (0.014 sec)
+
+--------------
+REVOKE SELECT ON ddv_probe.probe_people FROM 'ddv_billing'@'%'
+--------------
+
+Query OK, 0 rows affected (0.014 sec)
+
+--------------
+REVOKE SELECT ON ddv_probe.v_people_definer FROM 'ddv_billing'@'%'
+--------------
+
+Query OK, 0 rows affected (0.016 sec)
+
+--------------
+REVOKE SELECT ON ddv_probe.v_people_invoker FROM 'ddv_billing'@'%'
+--------------
+
+Query OK, 0 rows affected (0.017 sec)
+
+--------------
+REVOKE EXECUTE ON PROCEDURE ddv_probe.p_people FROM 'ddv_billing'@'%'
+--------------
+
+Query OK, 0 rows affected (0.014 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+DROP SCHEMA ddv_probe
+--------------
+
+Query OK, 4 rows affected (0.206 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+DROP MASKING POLICY IF EXISTS probe_mask_email
+--------------
+
+Query OK, 0 rows affected (0.030 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.002 sec)
+
+--------------
+DROP MASKING POLICY IF EXISTS probe_mask_phone
+--------------
+
+Query OK, 0 rows affected (0.023 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+Bye

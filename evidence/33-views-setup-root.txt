@@ -1,0 +1,116 @@
+--------------
+USE ddv_probe
+--------------
+
+Query OK, 0 rows affected (0.004 sec)
+
+--------------
+REVOKE SELECT ON ddv_probe.probe_people FROM 'ddv_agent'@'%'
+--------------
+
+Query OK, 0 rows affected (0.039 sec)
+
+--------------
+SHOW GRANTS FOR 'ddv_agent'@'%'
+--------------
+
++--------------------------------------------------------------------+
+| Grants for ddv_agent@%                                             |
++--------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `ddv_agent`@`%`                              |
+| GRANT SELECT ON `ddv_support`.`customers` TO `ddv_agent`@`%`       |
+| GRANT SELECT ON `ddv_support`.`orders` TO `ddv_agent`@`%`          |
+| GRANT SELECT ON `ddv_support`.`payments` TO `ddv_agent`@`%`        |
+| GRANT SELECT ON `ddv_support`.`support_tickets` TO `ddv_agent`@`%` |
+| GRANT `r_support_agent`@`%` TO `ddv_agent`@`%`                     |
++--------------------------------------------------------------------+
+6 rows in set (0.001 sec)
+
+--------------
+CREATE DEFINER=root@localhost SQL SECURITY DEFINER VIEW v_people_definer AS SELECT * FROM probe_people
+--------------
+
+Query OK, 0 rows affected (0.040 sec)
+
+--------------
+CREATE DEFINER=root@localhost SQL SECURITY INVOKER VIEW v_people_invoker AS SELECT * FROM probe_people
+--------------
+
+Query OK, 0 rows affected (0.027 sec)
+
+--------------
+CREATE DEFINER=root@localhost PROCEDURE p_people() SQL SECURITY DEFINER SELECT * FROM probe_people
+--------------
+
+Query OK, 0 rows affected (0.076 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+GRANT SELECT ON ddv_probe.v_people_definer TO 'ddv_agent'@'%', 'ddv_billing'@'%'
+--------------
+
+Query OK, 0 rows affected (0.016 sec)
+
+--------------
+GRANT SELECT ON ddv_probe.v_people_invoker TO 'ddv_agent'@'%', 'ddv_billing'@'%'
+--------------
+
+Query OK, 0 rows affected (0.018 sec)
+
+--------------
+GRANT EXECUTE ON PROCEDURE ddv_probe.p_people TO 'ddv_agent'@'%', 'ddv_billing'@'%'
+--------------
+
+Query OK, 0 rows affected (0.019 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+SHOW GRANTS FOR 'ddv_agent'@'%'
+--------------
+
++----------------------------------------------------------------------+
+| Grants for ddv_agent@%                                               |
++----------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `ddv_agent`@`%`                                |
+| GRANT SELECT ON `ddv_probe`.`v_people_definer` TO `ddv_agent`@`%`    |
+| GRANT SELECT ON `ddv_probe`.`v_people_invoker` TO `ddv_agent`@`%`    |
+| GRANT SELECT ON `ddv_support`.`customers` TO `ddv_agent`@`%`         |
+| GRANT SELECT ON `ddv_support`.`orders` TO `ddv_agent`@`%`            |
+| GRANT SELECT ON `ddv_support`.`payments` TO `ddv_agent`@`%`          |
+| GRANT SELECT ON `ddv_support`.`support_tickets` TO `ddv_agent`@`%`   |
+| GRANT EXECUTE ON PROCEDURE `ddv_probe`.`p_people` TO `ddv_agent`@`%` |
+| GRANT `r_support_agent`@`%` TO `ddv_agent`@`%`                       |
++----------------------------------------------------------------------+
+9 rows in set (0.001 sec)
+
+--------------
+SHOW GRANTS FOR 'ddv_billing'@'%'
+--------------
+
++------------------------------------------------------------------------+
+| Grants for ddv_billing@%                                               |
++------------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `ddv_billing`@`%`                                |
+| GRANT SELECT ON `ddv_probe`.`probe_people` TO `ddv_billing`@`%`        |
+| GRANT SELECT ON `ddv_probe`.`v_people_definer` TO `ddv_billing`@`%`    |
+| GRANT SELECT ON `ddv_probe`.`v_people_invoker` TO `ddv_billing`@`%`    |
+| GRANT SELECT ON `ddv_support`.`customers` TO `ddv_billing`@`%`         |
+| GRANT SELECT ON `ddv_support`.`orders` TO `ddv_billing`@`%`            |
+| GRANT SELECT ON `ddv_support`.`payments` TO `ddv_billing`@`%`          |
+| GRANT SELECT ON `ddv_support`.`support_tickets` TO `ddv_billing`@`%`   |
+| GRANT EXECUTE ON PROCEDURE `ddv_probe`.`p_people` TO `ddv_billing`@`%` |
+| GRANT `r_billing_admin`@`%` TO `ddv_billing`@`%`                       |
++------------------------------------------------------------------------+
+10 rows in set (0.001 sec)
+
+Bye

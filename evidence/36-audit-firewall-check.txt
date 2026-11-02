@@ -1,0 +1,32 @@
+--------------
+SELECT * FROM mysql.component
+--------------
+
++--------------+--------------------+------------------------------------+
+| component_id | component_group_id | component_urn                      |
++--------------+--------------------+------------------------------------+
+|            1 |                  1 | file://component_masking           |
+|            2 |                  2 | file://component_masking_functions |
+|            3 |                  3 | file://component_object_policy     |
++--------------+--------------------+------------------------------------+
+3 rows in set (0.020 sec)
+
+--------------
+SELECT PLUGIN_NAME, PLUGIN_STATUS FROM information_schema.PLUGINS WHERE PLUGIN_NAME LIKE '%audit%' OR PLUGIN_NAME LIKE '%firewall%'
+--------------
+
+Empty set (0.058 sec)
+
+--------------
+SHOW VARIABLES LIKE '%audit%'
+--------------
+
+Empty set (0.344 sec)
+
+--------------
+SHOW VARIABLES LIKE '%firewall%'
+--------------
+
+Empty set (0.049 sec)
+
+Bye

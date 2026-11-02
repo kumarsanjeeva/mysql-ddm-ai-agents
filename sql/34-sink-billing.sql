@@ -1,0 +1,3 @@
+USE ddv_probe;
+SELECT CURRENT_USER(), CURRENT_ROLE();
+SELECT * FROM probe_sink;

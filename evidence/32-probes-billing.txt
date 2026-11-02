@@ -1,0 +1,125 @@
+--------------
+USE ddv_probe
+--------------
+
+Query OK, 0 rows affected (0.002 sec)
+
+--------------
+SELECT CURRENT_USER(), CURRENT_ROLE()
+--------------
+
++----------------+-----------------------+
+| CURRENT_USER() | CURRENT_ROLE()        |
++----------------+-----------------------+
+| ddv_billing@%  | `r_billing_admin`@`%` |
++----------------+-----------------------+
+1 row in set (0.002 sec)
+
+--------------
+SELECT id, email FROM probe_people ORDER BY email
+--------------
+
++----+------------------------+
+| id | email                  |
++----+------------------------+
+|  3 | lena.mmmm@example.test |
+|  2 | mark.aaaa@example.test |
+|  1 | mark.zzzz@example.test |
++----+------------------------+
+3 rows in set (0.004 sec)
+
+--------------
+SELECT phone, COUNT(*) FROM probe_people GROUP BY phone
+--------------
+
++----------+----------+
+| phone    | COUNT(*) |
++----------+----------+
+| 555-0101 |        1 |
+| 777-0101 |        1 |
+| 555-0303 |        1 |
++----------+----------+
+3 rows in set, 1 warning (0.002 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
++---------+------+------------------------------------------------+
+| Level   | Code | Message                                        |
++---------+------+------------------------------------------------+
+| Warning | 1052 | Column 'phone' in group statement is ambiguous |
++---------+------+------------------------------------------------+
+1 row in set (0.001 sec)
+
+--------------
+SELECT COUNT(DISTINCT phone) FROM probe_people
+--------------
+
++-----------------------+
+| COUNT(DISTINCT phone) |
++-----------------------+
+|                     3 |
++-----------------------+
+1 row in set (0.002 sec)
+
+--------------
+SELECT MIN(email), MAX(email) FROM probe_people
+--------------
+
++------------------------+------------------------+
+| MIN(email)             | MAX(email)             |
++------------------------+------------------------+
+| lena.mmmm@example.test | mark.zzzz@example.test |
++------------------------+------------------------+
+1 row in set (0.001 sec)
+
+--------------
+SELECT a.id, b.id FROM probe_people a JOIN probe_people b ON a.phone = b.phone ORDER BY a.id, b.id
+--------------
+
++----+----+
+| id | id |
++----+----+
+|  1 |  1 |
+|  2 |  2 |
+|  3 |  3 |
++----+----+
+3 rows in set (0.020 sec)
+
+--------------
+SELECT id FROM probe_people WHERE phone = '777-0101'
+--------------
+
++----+
+| id |
++----+
+|  2 |
++----+
+1 row in set (0.007 sec)
+
+--------------
+SELECT id FROM probe_people WHERE email LIKE 'mark.a%'
+--------------
+
++----+
+| id |
++----+
+|  2 |
++----+
+1 row in set (0.007 sec)
+
+--------------
+SELECT id, LENGTH(email), LEFT(email, 6) FROM probe_people
+--------------
+
++----+---------------+----------------+
+| id | LENGTH(email) | LEFT(email, 6) |
++----+---------------+----------------+
+|  1 |            22 | mark.z         |
+|  2 |            22 | mark.a         |
+|  3 |            22 | lena.m         |
++----+---------------+----------------+
+3 rows in set (0.003 sec)
+
+Bye

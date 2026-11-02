@@ -1,0 +1,4 @@
+SELECT * FROM mysql.component;
+SELECT PLUGIN_NAME, PLUGIN_STATUS FROM information_schema.PLUGINS WHERE PLUGIN_NAME LIKE '%audit%' OR PLUGIN_NAME LIKE '%firewall%';
+SHOW VARIABLES LIKE '%audit%';
+SHOW VARIABLES LIKE '%firewall%';

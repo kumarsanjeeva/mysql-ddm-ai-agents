@@ -1,0 +1,16 @@
+REVOKE SELECT (id, email, phone) ON ddv_probe.probe_people FROM 'ddv_agent'@'%';
+REVOKE SELECT, INSERT ON ddv_probe.probe_sink FROM 'ddv_agent'@'%';
+REVOKE SELECT ON ddv_probe.v_people_definer FROM 'ddv_agent'@'%';
+REVOKE SELECT ON ddv_probe.v_people_invoker FROM 'ddv_agent'@'%';
+REVOKE EXECUTE ON PROCEDURE ddv_probe.p_people FROM 'ddv_agent'@'%';
+REVOKE SELECT ON ddv_probe.probe_people FROM 'ddv_billing'@'%';
+REVOKE SELECT ON ddv_probe.v_people_definer FROM 'ddv_billing'@'%';
+REVOKE SELECT ON ddv_probe.v_people_invoker FROM 'ddv_billing'@'%';
+REVOKE EXECUTE ON PROCEDURE ddv_probe.p_people FROM 'ddv_billing'@'%';
+SHOW WARNINGS;
+DROP SCHEMA ddv_probe;
+SHOW WARNINGS;
+DROP MASKING POLICY IF EXISTS probe_mask_email;
+SHOW WARNINGS;
+DROP MASKING POLICY IF EXISTS probe_mask_phone;
+SHOW WARNINGS;
