@@ -322,3 +322,52 @@ Files in sql/, agent/ and evidence/ not listed in earlier index sections. Step =
 | sql/52-state2-root.sql | Step 4c | 8361a4889898f0a30f59a5d06250ebed29dfacd98bbf3938582881293a96d693 |
 | sql/52-state3-root.sql | Step 4c | e38fde03abf05fb7dec2897ad3d4e03c626c054b141160160d434eec9451a22c |
 | sql/52-state4-root.sql | Step 4c | f3aece4fb4d47b570fc6fc2ac193739f6b1387a588288f762210994b424b5f25 |
+
+## 15. Step 5 Firewall findings (F45 onward)
+
+Added after earlier sections; earlier entries unchanged. All captured. Files are in evidence/ (53-*).
+
+- **F45.** (captured) The component install script ran against schema `ddv_sec` with exit code 0 and no ERROR lines. Afterwards `mysql.component` listed `file://component_firewall`; `component_firewall.database` was `ddv_sec` and `component_firewall.enabled` ON; `ddv_sec` held tables `firewall_group_allowlist`, `firewall_groups`, `firewall_membership` and 7 procedures; `performance_schema.persisted_variables` gained `component_firewall.database = ddv_sec`. (53-firewall-install.txt, 53-firewall-state.txt)
+- **F46.** (captured) Root's `SHOW GRANTS` listed FIREWALL_EXEMPT but not FIREWALL_ADMIN. FIREWALL_ADMIN was granted to root@localhost for the test. (53-firewall-state.txt, 53-firewall-recording.txt)
+- **F47.** (captured) `sp_set_firewall_group_mode_and_user('fw_agent', 'RECORDING', 'ddv_agent@%')` created the group with USERHOST `ddv_agent@%` and an empty `firewall_membership`; `sp_firewall_group_enlist` then added the membership row. (53-firewall-recording.txt, 53-firewall-enlist.txt)
+- **F48.** (captured) Recording the four scripted questions gave 8 allowlist rules with literals replaced by `?`, including `SET NAMES ? COLLATE ?`, ``SET @@SESSION . `autocommit` = OFF`` and ``SELECT @@SESSION . `sql_mode` ``. (53-firewall-recording-run.txt, 53-firewall-allowlist.txt)
+- **F49.** (captured) In PROTECTING mode the four scripted questions ran again. `SELECT * FROM ddv_support.customers`, `SELECT * FROM ddv_support.payments`, `SELECT full_name FROM ddv_support.customers WHERE email LIKE 'a%'`, `SELECT * FROM ddv_support.support_tickets` and `SELECT 1`, each in its own run as `ddv_agent`, returned `ERROR 6444 (28000): Access denied.` Afterwards `firewall_access_denied` was 10 and `firewall_access_granted` 28. The manual tutorial quotes `ERROR 1045 (28000): Statement was blocked by Firewall`. (53-firewall-protecting.txt, 53-firewall-protecting-status.txt)
+- **F50.** (captured) `SELECT COUNT(*) FROM ddv_support.customers` returned 6 for `ddv_billing` and for root while the group was in PROTECTING mode. (53-firewall-others.txt)
+- **F51.** (captured) `RESET` set the group mode to OFF and emptied the allowlist; `sp_firewall_group_remove` removed the group. The uninstall script ran against `ddv_sec` with exit code 0; `ddv_sec` was dropped. The persisted `component_firewall.database` entry remained until `RESET PERSIST component_firewall.database`; afterwards only `log_bin_trust_function_creators` remained. (53-firewall-uninstall.txt)
+- **F52.** (captured) The after snapshot compares equal to the baseline once timings are stripped. (53-after.txt, 53-compare.txt)
+- **F53.** (captured) `agent/support_agent_fw.py` differs from `agent/support_agent.py` only in `CONTEXT_FILE`; its final console line still says `evidence/21-llm-context.txt` (hard-coded text) while the file written was `evidence/53-fw-llm-context.txt`. The hash of `evidence/21-llm-context.txt` is unchanged. (53-firewall-recording-run.txt)
+
+## 16. Evidence index additions (Step 5 Firewall)
+
+Files in sql/, agent/ and evidence/ not listed in earlier index sections. Step = Step 5 Firewall.
+
+| File | Step | SHA-256 |
+|---|---|---|
+| agent/support_agent_fw.py | Step 5 Firewall | 2c4ff3551eefa89130912b394899e06309e1aaa95520e1274f78e9e458391112 |
+| evidence/53-after.txt | Step 5 Firewall | 0daa5d680d5b74b1cb63f6f000b73f28b905044e79856524aa80d1c919e62d48 |
+| evidence/53-compare.txt | Step 5 Firewall | 3578c435122e896b341f1b94c31ed5f1e33edf7cad3e9e96a80633a93f1f3264 |
+| evidence/53-firewall-allowlist.txt | Step 5 Firewall | 7769c4b270d2aa5b6616ce992d0291f4fe40b06378ba175ad54762f71bf9d0b6 |
+| evidence/53-firewall-enlist.txt | Step 5 Firewall | 486c26f778315089dcd9e2bd628d1723bbbe38d51e09a770963438815d294208 |
+| evidence/53-firewall-install.txt | Step 5 Firewall | 2329acc01f1849e6e8141289dd92e7dd17a718d04feafc703316b831c73fcc88 |
+| evidence/53-firewall-others.txt | Step 5 Firewall | 1820c636c4e780668e6bd3c78cf1a10416fc1181f7fa6f5485219789ca0a4a0a |
+| evidence/53-firewall-protecting.txt | Step 5 Firewall | d1c7d388e5775c380b7b43eb30e76c21bb48e3e75ce412bf5ac5ea8763e37fc9 |
+| evidence/53-firewall-protecting-status.txt | Step 5 Firewall | 5a75ea46e3621a69b6d4174ab17bf36194935e1966931e858c9dd74370e4eba7 |
+| evidence/53-firewall-recording.txt | Step 5 Firewall | f31cc479dd57cfb0c5573fbaf6ebd3f0ffd656b0e7f61b2275c94fb798a26391 |
+| evidence/53-firewall-recording-run.txt | Step 5 Firewall | 67da58bd32738e437abf5893a2d498e4e54f6a35a9946fbfb086132720df0d2c |
+| evidence/53-firewall-state.txt | Step 5 Firewall | a9f5c4de1e0880979a91771bab734c432182cc068d10660a39eeeff942c86b61 |
+| evidence/53-firewall-uninstall.txt | Step 5 Firewall | 5d098db6fb1c577d2c36dc16806be628a0fb186f17ea0d1adc72c8f7ddc7c8ba |
+| evidence/53-fw-llm-context.txt | Step 5 Firewall | faf56289389eb4c2300ccadcf3ae7917981f2449185f672266e18689f3c4c671 |
+| evidence/53-schema-create.txt | Step 5 Firewall | d9fb415d3fdfd3774fd2d39b4192f2270a15e1db694c4f2cd3bf3c7f298c5b37 |
+| evidence/REPORT-07.md | Step 5 Firewall | 21aa5b9280c781800afbbe853820ec60bc0740c638c88eab57dc7809b65a8dcc |
+| sql/53-allowlist.sql | Step 5 Firewall | ac00fd48835cec239bd5aef77bce7713f2beecaeedaecbcd978d2f7ed172a11b |
+| sql/53-create-schema.sql | Step 5 Firewall | a4d798dcbd163bfa14ffb1304ca3e026d660bae4808c1703f34bb7b2cd390725 |
+| sql/53-enlist.sql | Step 5 Firewall | 5ce2848fc2efc8168edeb20b564fb0173a7a43bb2916cb2309e40819d49b1ae0 |
+| sql/53-firewall-state.sql | Step 5 Firewall | 391ae0134f80c0a603d530c9dfa7b69e4e274619f0d1b949f7677c93c178fa45 |
+| sql/53-others.sql | Step 5 Firewall | ae1ef3101a5ac1d5f19a29836e9cda8717b429af74b405c39c058afcd5b296af |
+| sql/53-protecting-start.sql | Step 5 Firewall | e245ca12d84f4ffc5ed107a2bd38d922b14fd24181b144d1a118b6878c9c336a |
+| sql/53-protecting-status.sql | Step 5 Firewall | 8d6f9b37966420397b83850de6019001033b54c47c300d18fa7e64366f142d38 |
+| sql/53-protecting-stmts.sql | Step 5 Firewall | 451797a4d32828f397fcfe52d4621ec1cd7bcee596099bd546962ca5dc8fb1be |
+| sql/53-recording-start.sql | Step 5 Firewall | 550b4506f123702b58d288ea44b60f4949e62a3adb4b7e0c483ae1d57ead4680 |
+| sql/53-reset-persist.sql | Step 5 Firewall | c7b27a7b9232f2e706d54a94d0c46da2d32c83fd475f92048647a5afac1a5bec |
+| sql/53-teardown-1.sql | Step 5 Firewall | 95170137e4ffcdc2f51d7d6a541a7ea691a57404959f04b8bf9b2f3ce243c800 |
+| sql/53-teardown-2.sql | Step 5 Firewall | faceeebda5e078c18e53b5d898cb33d58e20b78023691364de6fe7db00706a0d |

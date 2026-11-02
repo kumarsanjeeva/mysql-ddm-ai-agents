@@ -1,0 +1,49 @@
+--------------
+GRANT FIREWALL_ADMIN ON *.* TO 'root'@'localhost'
+--------------
+
+Query OK, 0 rows affected (0.028 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+CALL ddv_sec.sp_set_firewall_group_mode_and_user('fw_agent', 'RECORDING', 'ddv_agent@%')
+--------------
+
++-------------------------------------------------------+
+| read_firewall_group_allowlist(arg_group_name,FW.rule) |
++-------------------------------------------------------+
+| Rules added: 0, already existed: 0.                   |
++-------------------------------------------------------+
+1 row in set (0.037 sec)
+
+Query OK, 0 rows affected (0.054 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+SELECT * FROM performance_schema.firewall_groups
+--------------
+
++----------+-----------+-------------+
+| NAME     | MODE      | USERHOST    |
++----------+-----------+-------------+
+| fw_agent | RECORDING | ddv_agent@% |
++----------+-----------+-------------+
+1 row in set (0.003 sec)
+
+--------------
+SELECT * FROM performance_schema.firewall_membership
+--------------
+
+Empty set (0.005 sec)
+
+Bye

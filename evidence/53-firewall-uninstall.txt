@@ -1,0 +1,255 @@
+--------------
+CALL ddv_sec.sp_set_firewall_group_mode('fw_agent', 'RESET')
+--------------
+
+Query OK, 0 rows affected (0.071 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.004 sec)
+
+--------------
+SELECT * FROM performance_schema.firewall_groups
+--------------
+
++----------+------+-------------+
+| NAME     | MODE | USERHOST    |
++----------+------+-------------+
+| fw_agent | OFF  | ddv_agent@% |
++----------+------+-------------+
+1 row in set (0.004 sec)
+
+--------------
+SELECT * FROM performance_schema.firewall_group_allowlist
+--------------
+
+Empty set (0.003 sec)
+
+--------------
+CALL ddv_sec.sp_firewall_group_remove('fw_agent')
+--------------
+
+Query OK, 0 rows affected (0.035 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.003 sec)
+
+--------------
+SELECT * FROM performance_schema.firewall_groups
+--------------
+
+Empty set (0.003 sec)
+
+--------------
+SELECT * FROM performance_schema.firewall_membership
+--------------
+
+Empty set (0.004 sec)
+
+--------------
+REVOKE FIREWALL_ADMIN ON *.* FROM 'root'@'localhost'
+--------------
+
+Query OK, 0 rows affected (0.029 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.002 sec)
+
+--------------
+SELECT ID, USER, HOST, DB, COMMAND FROM information_schema.PROCESSLIST
+--------------
+
++-----+-----------------+-----------------+------+---------+
+| ID  | USER            | HOST            | DB   | COMMAND |
++-----+-----------------+-----------------+------+---------+
+| 109 | root            | localhost:61650 | NULL | Query   |
+|   7 | event_scheduler | localhost       | NULL | Daemon  |
++-----+-----------------+-----------------+------+---------+
+2 rows in set, 1 warning (0.010 sec)
+
+Bye
+--------------
+# Copyright (c) 2025, 2026, Oracle and/or its affiliates.
+--------------
+
+Query OK, 0 rows affected (0.002 sec)
+
+--------------
+# This script uninstalls Enterprise Firewall component
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+# and drops its tables and stored procedures.
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+#
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+# NOTE: before running the script the following must be assured:
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+# 1) there is only a single connection (current)
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+# 2) the current database is @@component_firewall.database
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+UNINSTALL COMPONENT 'file://component_firewall'
+--------------
+
+Query OK, 0 rows affected (0.823 sec)
+
+--------------
+DROP PROCEDURE sp_set_firewall_group_mode
+--------------
+
+Query OK, 0 rows affected (0.046 sec)
+
+--------------
+DROP PROCEDURE sp_set_firewall_group_mode_and_user
+--------------
+
+Query OK, 0 rows affected (0.049 sec)
+
+--------------
+DROP PROCEDURE sp_reload_firewall_group_rules
+--------------
+
+Query OK, 0 rows affected (0.044 sec)
+
+--------------
+DROP PROCEDURE sp_firewall_group_enlist
+--------------
+
+Query OK, 0 rows affected (0.045 sec)
+
+--------------
+DROP PROCEDURE sp_firewall_group_delist
+--------------
+
+Query OK, 0 rows affected (0.040 sec)
+
+--------------
+DROP PROCEDURE sp_firewall_group_rename
+--------------
+
+Query OK, 0 rows affected (0.054 sec)
+
+--------------
+DROP PROCEDURE sp_firewall_group_remove
+--------------
+
+Query OK, 0 rows affected (0.037 sec)
+
+--------------
+DROP TABLE firewall_group_allowlist
+--------------
+
+Query OK, 0 rows affected (0.136 sec)
+
+--------------
+DROP TABLE firewall_groups
+--------------
+
+Query OK, 0 rows affected (0.151 sec)
+
+--------------
+DROP TABLE firewall_membership
+--------------
+
+Query OK, 0 rows affected (0.110 sec)
+
+Bye
+--------------
+DROP SCHEMA ddv_sec
+--------------
+
+Query OK, 0 rows affected (0.105 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.003 sec)
+
+--------------
+SELECT * FROM mysql.component
+--------------
+
++--------------+--------------------+------------------------------------+
+| component_id | component_group_id | component_urn                      |
++--------------+--------------------+------------------------------------+
+|            1 |                  1 | file://component_masking           |
+|            2 |                  2 | file://component_masking_functions |
+|            3 |                  3 | file://component_object_policy     |
++--------------+--------------------+------------------------------------+
+3 rows in set (0.005 sec)
+
+--------------
+SHOW VARIABLES LIKE '%firewall%'
+--------------
+
+Empty set (0.029 sec)
+
+--------------
+SELECT * FROM performance_schema.persisted_variables
+--------------
+
++---------------------------------+----------------+
+| VARIABLE_NAME                   | VARIABLE_VALUE |
++---------------------------------+----------------+
+| log_bin_trust_function_creators | ON             |
+| component_firewall.database     | ddv_sec        |
++---------------------------------+----------------+
+2 rows in set (0.004 sec)
+
+Bye
+--------------
+RESET PERSIST component_firewall.database
+--------------
+
+Query OK, 0 rows affected (0.091 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.003 sec)
+
+--------------
+SELECT * FROM performance_schema.persisted_variables
+--------------
+
++---------------------------------+----------------+
+| VARIABLE_NAME                   | VARIABLE_VALUE |
++---------------------------------+----------------+
+| log_bin_trust_function_creators | ON             |
++---------------------------------+----------------+
+1 row in set (0.004 sec)
+
+Bye

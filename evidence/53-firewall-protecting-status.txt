@@ -1,0 +1,27 @@
+--------------
+SELECT * FROM performance_schema.firewall_groups
+--------------
+
++----------+------------+-------------+
+| NAME     | MODE       | USERHOST    |
++----------+------------+-------------+
+| fw_agent | PROTECTING | ddv_agent@% |
++----------+------------+-------------+
+1 row in set (0.003 sec)
+
+--------------
+SHOW STATUS LIKE '%firewall%'
+--------------
+
++----------------------------------------------------+-------+
+| Variable_name                                      | Value |
++----------------------------------------------------+-------+
+| firewall_access_denied                             | 10    |
+| firewall_access_granted                            | 28    |
+| firewall_access_suspicious                         | 0     |
+| firewall_cached_entries                            | 8     |
+| option_tracker_usage:Enterprise Firewall component | 22    |
++----------------------------------------------------+-------+
+5 rows in set (0.006 sec)
+
+Bye

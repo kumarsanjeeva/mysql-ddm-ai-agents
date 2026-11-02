@@ -1,0 +1,45 @@
+--------------
+SELECT * FROM performance_schema.firewall_group_allowlist
+--------------
+
++----------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| NAME     | RULE                                                                                                                                                                                                                                                                               |
++----------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| fw_agent | SELECT @@SESSION . `sql_mode`                                                                                                                                                                                                                                                      |
+| fw_agent | SELECT RIGHT ( `phone` , ? ) = ? AS `matches` FROM `ddv_support` . `customers` WHERE `id` = ?                                                                                                                                                                                      |
+| fw_agent | SELECT `id` , STATUS , `total_amount` , `created_at` FROM `ddv_support` . `orders` WHERE `customer_id` = ? ORDER BY `id`                                                                                                                                                           |
+| fw_agent | SELECT `id` , SUBJECT , `notes` FROM `ddv_support` . `support_tickets` WHERE `customer_id` = ? ORDER BY `id`                                                                                                                                                                       |
+| fw_agent | SELECT `id` , `full_name` , `phone` , `email` , `tax_id` FROM `ddv_support` . `customers` WHERE `full_name` = ?                                                                                                                                                                    |
+| fw_agent | SELECT `p` . `id` , `p` . `order_id` , `p` . `method` , `p` . `card_number` , `p` . `upi_id` , `p` . `status` , `o` . `status` AS `order_status` FROM `ddv_support` . `payments` `p` JOIN `ddv_support` . `orders` `o` ON `o` . `id` = `p` . `order_id` WHERE `p` . `order_id` = ? |
+| fw_agent | SET @@SESSION . `autocommit` = OFF                                                                                                                                                                                                                                                 |
+| fw_agent | SET NAMES ? COLLATE ?                                                                                                                                                                                                                                                              |
++----------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+8 rows in set (0.023 sec)
+
+--------------
+SELECT * FROM performance_schema.firewall_groups
+--------------
+
++----------+-----------+-------------+
+| NAME     | MODE      | USERHOST    |
++----------+-----------+-------------+
+| fw_agent | RECORDING | ddv_agent@% |
++----------+-----------+-------------+
+1 row in set (0.006 sec)
+
+--------------
+SHOW STATUS LIKE '%firewall%'
+--------------
+
++----------------------------------------------------+-------+
+| Variable_name                                      | Value |
++----------------------------------------------------+-------+
+| firewall_access_denied                             | 0     |
+| firewall_access_granted                            | 14    |
+| firewall_access_suspicious                         | 0     |
+| firewall_cached_entries                            | 8     |
+| option_tracker_usage:Enterprise Firewall component | 11    |
++----------------------------------------------------+-------+
+5 rows in set (0.023 sec)
+
+Bye

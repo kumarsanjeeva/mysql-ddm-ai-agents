@@ -1,0 +1,8 @@
+SELECT * FROM mysql.component;
+SHOW VARIABLES LIKE '%firewall%';
+SHOW STATUS LIKE '%firewall%';
+SELECT * FROM performance_schema.persisted_variables;
+SHOW FULL TABLES FROM ddv_sec;
+SELECT ROUTINE_SCHEMA, ROUTINE_NAME, ROUTINE_TYPE FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA = 'ddv_sec' ORDER BY 2;
+SHOW GRANTS FOR CURRENT_USER();
+SHOW PRIVILEGES;

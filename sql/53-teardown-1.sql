@@ -1,0 +1,11 @@
+CALL ddv_sec.sp_set_firewall_group_mode('fw_agent', 'RESET');
+SHOW WARNINGS;
+SELECT * FROM performance_schema.firewall_groups;
+SELECT * FROM performance_schema.firewall_group_allowlist;
+CALL ddv_sec.sp_firewall_group_remove('fw_agent');
+SHOW WARNINGS;
+SELECT * FROM performance_schema.firewall_groups;
+SELECT * FROM performance_schema.firewall_membership;
+REVOKE FIREWALL_ADMIN ON *.* FROM 'root'@'localhost';
+SHOW WARNINGS;
+SELECT ID, USER, HOST, DB, COMMAND FROM information_schema.PROCESSLIST;
