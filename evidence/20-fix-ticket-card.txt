@@ -1,0 +1,27 @@
+--------------
+UPDATE ddv_support.support_tickets
+SET notes = REPLACE(notes, '5555555555554444', '378282246310005')
+WHERE id = 3
+--------------
+
+Query OK, 1 row affected (0.558 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.005 sec)
+
+--------------
+SELECT notes FROM ddv_support.support_tickets WHERE id=3
+--------------
+
++---------------------------------------------------------------------------------------------------------------------+
+| notes                                                                                                               |
++---------------------------------------------------------------------------------------------------------------------+
+| Customer typed: my card is 378282246310005 and you can reach me at chen.demo@example.test, please retry the charge. |
++---------------------------------------------------------------------------------------------------------------------+
+1 row in set (0.028 sec)
+
+Bye

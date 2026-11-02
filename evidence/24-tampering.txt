@@ -1,0 +1,24 @@
+--------------
+ALTER TABLE ddv_support.customers MODIFY COLUMN phone VARCHAR(20) NOT NULL
+--------------
+
+ERROR 1142 (42000) at line 1: ALTER command denied to user 'ddv_agent'@'localhost' for table 'customers'
+Bye
+--------------
+DROP MASKING POLICY sup_mask_phone
+--------------
+
+ERROR 1227 (42000) at line 1: Access denied; you need (at least one of) the MANAGE_DATA_MASKING_POLICY privilege(s) for this operation
+Bye
+--------------
+CREATE TABLE ddv_support.copy_customers AS SELECT * FROM ddv_support.customers
+--------------
+
+ERROR 1142 (42000) at line 1: INSERT, CREATE command denied to user 'ddv_agent'@'localhost' for table 'copy_customers'
+Bye
+--------------
+CREATE VIEW ddv_support.v_leak AS SELECT * FROM ddv_support.customers
+--------------
+
+ERROR 1142 (42000) at line 1: CREATE VIEW command denied to user 'ddv_agent'@'localhost' for table 'v_leak'
+Bye

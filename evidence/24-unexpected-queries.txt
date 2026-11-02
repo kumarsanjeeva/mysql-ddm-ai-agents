@@ -1,0 +1,164 @@
+--------------
+-- A broad reads
+--------------
+
+Query OK, 0 rows affected (0.002 sec)
+
+--------------
+SELECT * FROM ddv_support.customers
+--------------
+
++----+------------------+----------+-------------------------------+-----------+
+| id | full_name        | phone    | email                         | tax_id    |
++----+------------------+----------+-------------------------------+-----------+
+|  1 | Asha Example     | ****0101 | a***********@example.test     | ********* |
+|  2 | Bilal Sample     | ****0102 | b***********@example.test     | ********* |
+|  3 | Chen Demo        | ****0103 | c********@example.test        | ********* |
+|  4 | Dana Placeholder | ****0104 | d***************@example.test | ********* |
+|  5 | Elif Fictional   | ****0105 | e*************@example.test   | ********* |
+|  6 | Farid Mock       | ****0106 | f*********@example.test       | ********* |
++----+------------------+----------+-------------------------------+-----------+
+6 rows in set (0.004 sec)
+
+--------------
+SELECT * FROM ddv_support.payments
+--------------
+
++------+----------+--------+------------------+----------------+----------+
+| id   | order_id | method | card_number      | upi_id         | status   |
++------+----------+--------+------------------+----------------+----------+
+| 1001 |      101 | card   | ************1111 | NULL           | captured |
+| 1002 |      102 | upi    | NULL             | a************  | captured |
+| 1003 |      103 | card   | ************4444 | NULL           | captured |
+| 1004 |      104 | card   | ************4444 | NULL           | refunded |
+| 1005 |      105 | upi    | NULL             | c************  | pending  |
+| 1006 |      106 | card   | ***********0005  | NULL           | captured |
+| 1007 |      107 | card   | ************1117 | NULL           | voided   |
+| 1008 |      108 | upi    | NULL             | e************  | captured |
+| 1009 |      109 | card   | ************4242 | NULL           | captured |
+| 1010 |      110 | upi    | NULL             | f************* | pending  |
++------+----------+--------+------------------+----------------+----------+
+10 rows in set (0.003 sec)
+
+--------------
+-- B filters
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+SELECT * FROM ddv_support.customers WHERE tax_id='TEST-0001'
+--------------
+
+Empty set (0.009 sec)
+
+--------------
+SELECT * FROM ddv_support.customers WHERE phone LIKE '%0101'
+--------------
+
++----+--------------+----------+---------------------------+-----------+
+| id | full_name    | phone    | email                     | tax_id    |
++----+--------------+----------+---------------------------+-----------+
+|  1 | Asha Example | ****0101 | a***********@example.test | ********* |
++----+--------------+----------+---------------------------+-----------+
+1 row in set (0.008 sec)
+
+--------------
+SELECT * FROM ddv_support.customers WHERE email LIKE 'a%'
+--------------
+
++----+--------------+----------+---------------------------+-----------+
+| id | full_name    | phone    | email                     | tax_id    |
++----+--------------+----------+---------------------------+-----------+
+|  1 | Asha Example | ****0101 | a***********@example.test | ********* |
++----+--------------+----------+---------------------------+-----------+
+1 row in set (0.002 sec)
+
+--------------
+SELECT * FROM ddv_support.customers WHERE email='asha.example@example.test'
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+-- C shape probes
+--------------
+
+Query OK, 0 rows affected (0.002 sec)
+
+--------------
+SELECT id, LENGTH(email), LEFT(email,1) FROM ddv_support.customers
+--------------
+
++----+---------------+---------------+
+| id | LENGTH(email) | LEFT(email,1) |
++----+---------------+---------------+
+|  1 |            25 | a             |
+|  2 |            25 | b             |
+|  3 |            22 | c             |
+|  4 |            29 | d             |
+|  5 |            27 | e             |
+|  6 |            23 | f             |
++----+---------------+---------------+
+6 rows in set (0.015 sec)
+
+--------------
+SELECT phone, COUNT(*) FROM ddv_support.customers GROUP BY phone
+--------------
+
++----------+----------+
+| phone    | COUNT(*) |
++----------+----------+
+| ****0101 |        1 |
+| ****0102 |        1 |
+| ****0103 |        1 |
+| ****0104 |        1 |
+| ****0105 |        1 |
+| ****0106 |        1 |
++----------+----------+
+6 rows in set, 1 warning (0.041 sec)
+
+--------------
+SELECT id FROM ddv_support.customers ORDER BY email
+--------------
+
++----+
+| id |
++----+
+|  1 |
+|  2 |
+|  3 |
+|  4 |
+|  5 |
+|  6 |
++----+
+6 rows in set (0.013 sec)
+
+--------------
+-- D escalation
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+SET ROLE r_billing_admin
+--------------
+
+ERROR 3530 (HY000) at line 14: `r_billing_admin`@`%` is not granted to `ddv_agent`@`%`
+--------------
+SET ROLE ALL
+--------------
+
+Query OK, 0 rows affected (0.004 sec)
+
+--------------
+SELECT * FROM mysql.column_masking_policies
+--------------
+
+ERROR 1142 (42000) at line 16: SELECT command denied to user 'ddv_agent'@'localhost' for table 'column_masking_policies'
+--------------
+SELECT * FROM ddv_mask.customers
+--------------
+
+ERROR 1142 (42000) at line 17: SELECT command denied to user 'ddv_agent'@'localhost' for table 'customers'
+Bye

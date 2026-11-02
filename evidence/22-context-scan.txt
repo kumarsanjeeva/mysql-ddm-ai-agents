@@ -1,0 +1,17 @@
+﻿Line numbers are line numbers in evidence/21-llm-context.txt
+Question 1
+  digit runs 13-19: count=0 lines=[]
+  emails without *: count=0 lines=[]
+  TEST-\d{4}: count=0 lines=[]
+Question 2
+  digit runs 13-19: count=0 lines=[]
+  emails without *: count=0 lines=[]
+  TEST-\d{4}: count=0 lines=[]
+Question 3
+  digit runs 13-19: count=1 lines=[39]
+  emails without *: count=1 lines=[39]
+  TEST-\d{4}: count=0 lines=[]
+Question 4
+  digit runs 13-19: count=0 lines=[]
+  emails without *: count=0 lines=[]
+  TEST-\d{4}: count=0 lines=[]

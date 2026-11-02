@@ -1,0 +1,19 @@
+--------------
+SELECT * FROM mysql.column_masking_policies
+--------------
+
++-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------+------------+----------------+
+| policy_name     | expression                                                                                                                                                                 | argument      | extra_info | schema_version |
++-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------+------------+----------------+
+| mask_email      | (case when current_user_in(_utf8mb4'ddv_admin@%') then `email_column` else mask_outer(`email_column` AS `email_column`,2 AS `2`,2 AS `2`,_utf8mb4'#' AS `'#'`) end)        | email_column  | []         |              1 |
+| mask_phone      | (case when current_user_in(_utf8mb4'ddv_admin@%') then `phone_column` else mask_inner(`phone_column` AS `phone_column`,0 AS `0`,4 AS `4`,_utf8mb4'*' AS `'*'`) end)        | phone_column  | []         |              1 |
+| sup_mask_card   | (case when current_role_in(_utf8mb4'r_billing_admin') then `card_column` else mask_inner(`card_column` AS `card_column`,0 AS `0`,4 AS `4`,_utf8mb4'*' AS `'*'`) end)       | card_column   | []         |              1 |
+| sup_mask_email  | (case when current_role_in(_utf8mb4'r_billing_admin') then `email_column` else mask_inner(`email_column` AS `email_column`,1 AS `1`,13 AS `13`,_utf8mb4'*' AS `'*'`) end)  | email_column  | []         |              1 |
+| sup_mask_phone  | (case when current_role_in(_utf8mb4'r_billing_admin') then `phone_column` else mask_inner(`phone_column` AS `phone_column`,0 AS `0`,4 AS `4`,_utf8mb4'*' AS `'*'`) end)    | phone_column  | []         |              1 |
+| sup_mask_tax_id | (case when current_role_in(_utf8mb4'r_billing_admin') then `tax_id_column` else mask_inner(`tax_id_column` AS `tax_id_column`,0 AS `0`,0 AS `0`,_utf8mb4'*' AS `'*'`) end) | tax_id_column | []         |              1 |
+| sup_mask_upi    | (case when current_role_in(_utf8mb4'r_billing_admin') then `upi_column` else mask_inner(`upi_column` AS `upi_column`,1 AS `1`,0 AS `0`,_utf8mb4'*' AS `'*'`) end)          | upi_column    | []         |              1 |
++-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------+------------+----------------+
+7 rows in set (0.005 sec)
+
+ERROR at line 2: Unknown command '\G'.
+Bye
