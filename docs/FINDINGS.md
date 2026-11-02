@@ -69,6 +69,9 @@ All are captured tests unless stated.
 - The root gatekeeper result says nothing about root's power. Root created and dropped policies earlier.
 - The agent is scripted, with no LLM. Question 3 rests on ticket text, and no payment in the seed is "failed".
 - Seed note: ticket 3 originally quoted another customer's card; fixed in `sql/20-fix-ticket-card.sql` (evidence/20-fix-ticket-card.txt).
+- The shape probes (`LENGTH`, `LEFT`) and `ORDER BY` can't discriminate between masked and real values on this data. Step 4 repeats them on purpose-built data. (reasoning)
+- The agent tools select columns they don't need, so masked placeholders enter the model context. (reasoning)
+- Free-text notes need a column-level grant or an application-side redaction step. (reasoning, untested)
 
 ## 6. Process notes (for a "what went wrong" box)
 
@@ -76,8 +79,11 @@ All are captured tests unless stated.
 - The CREATE USER sessions ran from a generated gitignored file so passwords stay out of evidence. Not captured.
 - An earlier manual run of Step 1 by the author is kept privately and is not used.
 - `evidence/24-tampering.txt` was cleaned: empty exit-code lines were removed and a first run with PowerShell wrapper text was discarded. The ERROR lines are intact.
-- The Python driver was installed by Claude Code, at the author's request. Session history: Claude Code reported that no MySQL driver was installed and asked which to install (`mysql-connector-python` or `pymysql`); the author replied "install mysql-connector-python". `pip show mysql-connector-python` reported Name: mysql-connector-python, Version: 26.10.0, Author: Oracle and/or its affiliates, License: GNU GPLv2 (with FOSS License Exception). The install output was "Using cached mysql_connector_python-26.10.0-cp313-cp313-win_amd64.whl"; it did not name the package index, so the index is not recorded. (live observation, not in repo evidence)
+- (a) Driver: mysql-connector-python 26.10.0, GPLv2 with FOSS exception, installed by Claude Code at the author's request. Exchange: Claude Code reported that no MySQL driver was installed and asked "Which should I install? `mysql-connector-python` (Oracle's driver) or `pymysql` (pure Python)"; the author replied "install mysql-connector-python". `pip show` reported Version: 26.10.0, Author: Oracle and/or its affiliates, License: GNU GPLv2 (with FOSS License Exception). The install output said "Using cached mysql_connector_python-26.10.0-cp313-cp313-win_amd64.whl" and did not name the package index. (live observation, not in repo evidence)
+- (b) evidence/22-context-scan.txt was saved through PowerShell redirection and begins with a UTF-8 BOM. agent/scan_context.py reproduces it apart from the BOM and line endings.
+- (c) The Step 1 and 2 files were first committed with CRLF converted to LF because core.autocrlf=true and .gitattributes did not exist yet. Commit 3054d77 re-stored them as captured. A fresh clone verifies all three reports (10, 33 and 47 hashes, 0 mismatches).
 
+(see section 7 for what was not tested)
 ## 7. Not tested
 
 - MySQL Enterprise Audit.
@@ -86,105 +92,23 @@ All are captured tests unless stated.
 - MySQL REST Service.
 - A real LLM run.
 - Whether `ALTER TABLE ... MODIFY COLUMN` without a `MASKING POLICY` clause strips masking for a user who holds ALTER.
+- Whether `LENGTH`, `LEFT`, `ORDER BY`, `GROUP BY` and aggregates run on masked or real values.
+- DEFINER views and routines.
+- `INSERT ... SELECT` into a writable table.
+- Column-level grants.
 
-## 8. UNREVIEWED
+## 8. Review of unexpected-query evidence
 
-From Claude Code's reading; not yet checked by the author's planning assistant. Quoted verbatim from evidence/24-unexpected-queries.txt, with that file's line numbers.
+All are captured tests. Source: evidence/24-unexpected-queries.txt unless stated.
 
-### Shape probes (lines 89-135)
-````text
-89: --------------
-90: SELECT id, LENGTH(email), LEFT(email,1) FROM ddv_support.customers
-91: --------------
-92: 
-93: +----+---------------+---------------+
-94: | id | LENGTH(email) | LEFT(email,1) |
-95: +----+---------------+---------------+
-96: |  1 |            25 | a             |
-97: |  2 |            25 | b             |
-98: |  3 |            22 | c             |
-99: |  4 |            29 | d             |
-100: |  5 |            27 | e             |
-101: |  6 |            23 | f             |
-102: +----+---------------+---------------+
-103: 6 rows in set (0.015 sec)
-104: 
-105: --------------
-106: SELECT phone, COUNT(*) FROM ddv_support.customers GROUP BY phone
-107: --------------
-108: 
-109: +----------+----------+
-110: | phone    | COUNT(*) |
-111: +----------+----------+
-112: | ****0101 |        1 |
-113: | ****0102 |        1 |
-114: | ****0103 |        1 |
-115: | ****0104 |        1 |
-116: | ****0105 |        1 |
-117: | ****0106 |        1 |
-118: +----------+----------+
-119: 6 rows in set, 1 warning (0.041 sec)
-120: 
-121: --------------
-122: SELECT id FROM ddv_support.customers ORDER BY email
-123: --------------
-124: 
-125: +----+
-126: | id |
-127: +----+
-128: |  1 |
-129: |  2 |
-130: |  3 |
-131: |  4 |
-132: |  5 |
-133: |  6 |
-134: +----+
-135: 6 rows in set (0.013 sec)
-````
-
-### SET ROLE ALL and later statements (lines 148-164)
-````text
-148: --------------
-149: SET ROLE ALL
-150: --------------
-151: 
-152: Query OK, 0 rows affected (0.004 sec)
-153: 
-154: --------------
-155: SELECT * FROM mysql.column_masking_policies
-156: --------------
-157: 
-158: ERROR 1142 (42000) at line 16: SELECT command denied to user 'ddv_agent'@'localhost' for table 'column_masking_policies'
-159: --------------
-160: SELECT * FROM ddv_mask.customers
-161: --------------
-162: 
-163: ERROR 1142 (42000) at line 17: SELECT command denied to user 'ddv_agent'@'localhost' for table 'customers'
-164: Bye
-````
-
-### mysql.column_masking_policies, fresh query as root (2026-11-03, not saved as a separate evidence file)
-````text
---------------
-SELECT * FROM mysql.column_masking_policies
---------------
-
-+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------+------------+----------------+
-| policy_name     | expression                                                                                                                                                                 | argument      | extra_info | schema_version |
-+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------+------------+----------------+
-| mask_email      | (case when current_user_in(_utf8mb4'ddv_admin@%') then `email_column` else mask_outer(`email_column` AS `email_column`,2 AS `2`,2 AS `2`,_utf8mb4'#' AS `'#'`) end)        | email_column  | []         |              1 |
-| mask_phone      | (case when current_user_in(_utf8mb4'ddv_admin@%') then `phone_column` else mask_inner(`phone_column` AS `phone_column`,0 AS `0`,4 AS `4`,_utf8mb4'*' AS `'*'`) end)        | phone_column  | []         |              1 |
-| sup_mask_card   | (case when current_role_in(_utf8mb4'r_billing_admin') then `card_column` else mask_inner(`card_column` AS `card_column`,0 AS `0`,4 AS `4`,_utf8mb4'*' AS `'*'`) end)       | card_column   | []         |              1 |
-| sup_mask_email  | (case when current_role_in(_utf8mb4'r_billing_admin') then `email_column` else mask_inner(`email_column` AS `email_column`,1 AS `1`,13 AS `13`,_utf8mb4'*' AS `'*'`) end)  | email_column  | []         |              1 |
-| sup_mask_phone  | (case when current_role_in(_utf8mb4'r_billing_admin') then `phone_column` else mask_inner(`phone_column` AS `phone_column`,0 AS `0`,4 AS `4`,_utf8mb4'*' AS `'*'`) end)    | phone_column  | []         |              1 |
-| sup_mask_tax_id | (case when current_role_in(_utf8mb4'r_billing_admin') then `tax_id_column` else mask_inner(`tax_id_column` AS `tax_id_column`,0 AS `0`,0 AS `0`,_utf8mb4'*' AS `'*'`) end) | tax_id_column | []         |              1 |
-| sup_mask_upi    | (case when current_role_in(_utf8mb4'r_billing_admin') then `upi_column` else mask_inner(`upi_column` AS `upi_column`,1 AS `1`,0 AS `0`,_utf8mb4'*' AS `'*'`) end)          | upi_column    | []         |              1 |
-+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------+------------+----------------+
-7 rows in set (0.004 sec)
-
-Bye
-````
-
+- **F13.** (captured) `SELECT *` on customers and payments as `ddv_agent` returned masked values only. (24-unexpected-queries.txt)
+- **F14.** (captured) `tax_id='TEST-0001'` and `email='asha.example@example.test'` returned empty sets, so filters ran on the masked value. With Step 1's two probes that is four attempts. (24-unexpected-queries.txt, 03-probe-agent.txt)
+- **F15.** (captured, weak) `phone LIKE '%0101'` and `email LIKE 'a%'` returned one row each. Both patterns match what the mask shows, so they say nothing about which value was evaluated. (24-unexpected-queries.txt)
+- **F16.** (captured, non-diagnostic) `LENGTH(email)` and `LEFT(email,1)` returned values equal to what the masked display shows. Whether they ran on masked or real values can't be told from this data. (24-unexpected-queries.txt)
+- **F17.** (captured) `GROUP BY phone` returned six groups of one, with 1 warning. A re-run with `SHOW WARNINGS` returned: `Warning | 1052 | Column 'phone' in group statement is ambiguous`. The re-run is not the original capture. (24-unexpected-queries.txt; 26-group-by-warning.txt, re-run)
+- **F18.** (captured, non-diagnostic) `ORDER BY email` returned ids 1 to 6. The seed is alphabetical by id, so masked and real order coincide. (24-unexpected-queries.txt)
+- **F19.** (captured) `SET ROLE r_billing_admin` gave ERROR 3530 (not granted). `SET ROLE ALL` succeeded. Then `mysql.column_masking_policies` and `ddv_mask.customers` were denied with ERROR 1142. (24-unexpected-queries.txt)
+- **F20.** (captured) After tampering, 7 policies remain: mask_email, mask_phone, sup_mask_card, sup_mask_email, sup_mask_phone, sup_mask_tax_id, sup_mask_upi. (25-after.txt)
 ## 9. Wording for the blog
 
 Safe:
@@ -205,7 +129,7 @@ Avoid:
 
 ## 10. Evidence index
 
-SHA-256 of every file in sql/, agent/, docs/ and evidence/, except this file. Step = the commit that first added it; Step 3 = added in the Step 3 commit.
+SHA-256 of every file in sql/, agent/, docs/ and evidence/, except this file. Step = the commit that first added it; Step 3 = added in the Step 3 work.
 
 | File | Step | SHA-256 |
 |---|---|---|
@@ -237,6 +161,7 @@ SHA-256 of every file in sql/, agent/, docs/ and evidence/, except this file. St
 | evidence/24-tampering.txt | Step 3 | 64fca2520bd608a4cd2d064aee575779db870b658a5dd3d5dcfb00b98c824616 |
 | evidence/24-unexpected-queries.txt | Step 3 | 66452c7e77773f279a55b753c8cdc965857561fe3fee0423169b9104babe27df |
 | evidence/25-after.txt | Step 3 | 644c04921d69d06a8c7fcc8b5140d33bb954a525746f80292c72baee37340e09 |
+| evidence/26-group-by-warning.txt | Step 3 (re-run of the GROUP BY probe, not the original capture) | ecef18726e4a1a7c03143e59504eeb3b42f3ad6cab29bf161680bfa2ce6b3679 |
 | evidence/REPORT-01.md | Step 1 | 780f4baa3e605c90f852e46fa66d5d9aec8ab2e6414146481a0e7895192b5b1b |
 | evidence/REPORT-02.md | Step 2 | aad9e793a459d055a9de77883caa008b88409d095fe4cd0a2f835539320b14d0 |
 | evidence/REPORT-03.md | Step 3 | 2144262edd1d315d24820bb9e36b85232fd9ae4b6a1908a25c616d8b8ead269c |
