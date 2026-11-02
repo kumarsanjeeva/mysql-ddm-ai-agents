@@ -1,0 +1,117 @@
+--------------
+SELECT CURRENT_USER(), CURRENT_ROLE()
+--------------
+
++----------------+-----------------------+
+| CURRENT_USER() | CURRENT_ROLE()        |
++----------------+-----------------------+
+| ddv_billing@%  | `r_billing_admin`@`%` |
++----------------+-----------------------+
+1 row in set (0.003 sec)
+
+--------------
+SELECT * FROM ddv_support.customers ORDER BY id
+--------------
+
++----+------------------+----------+-------------------------------+-----------+
+| id | full_name        | phone    | email                         | tax_id    |
++----+------------------+----------+-------------------------------+-----------+
+|  1 | Asha Example     | 555-0101 | asha.example@example.test     | TEST-0001 |
+|  2 | Bilal Sample     | 555-0102 | bilal.sample@example.test     | TEST-0002 |
+|  3 | Chen Demo        | 555-0103 | chen.demo@example.test        | TEST-0003 |
+|  4 | Dana Placeholder | 555-0104 | dana.placeholder@example.test | TEST-0004 |
+|  5 | Elif Fictional   | 555-0105 | elif.fictional@example.test   | TEST-0005 |
+|  6 | Farid Mock       | 555-0106 | farid.mock@example.test       | TEST-0006 |
++----+------------------+----------+-------------------------------+-----------+
+6 rows in set (0.023 sec)
+
+--------------
+SELECT o.id AS order_id, o.status, o.total_amount, o.created_at, c.id AS customer_id, c.full_name, c.phone, c.email, c.tax_id
+  FROM ddv_support.orders o JOIN ddv_support.customers c ON c.id = o.customer_id ORDER BY o.id
+--------------
+
++----------+-----------+--------------+---------------------+-------------+------------------+----------+-------------------------------+-----------+
+| order_id | status    | total_amount | created_at          | customer_id | full_name        | phone    | email                         | tax_id    |
++----------+-----------+--------------+---------------------+-------------+------------------+----------+-------------------------------+-----------+
+|      101 | delivered |      1250.00 | 2026-09-01 10:15:00 |           1 | Asha Example     | 555-0101 | asha.example@example.test     | TEST-0001 |
+|      102 | shipped   |       349.50 | 2026-09-20 14:02:00 |           1 | Asha Example     | 555-0101 | asha.example@example.test     | TEST-0001 |
+|      103 | delivered |       899.99 | 2026-09-03 09:40:00 |           2 | Bilal Sample     | 555-0102 | bilal.sample@example.test     | TEST-0002 |
+|      104 | refunded  |       120.00 | 2026-09-11 16:25:00 |           2 | Bilal Sample     | 555-0102 | bilal.sample@example.test     | TEST-0002 |
+|      105 | pending   |        45.00 | 2026-10-02 11:05:00 |           3 | Chen Demo        | 555-0103 | chen.demo@example.test        | TEST-0003 |
+|      106 | delivered |       310.75 | 2026-09-28 18:30:00 |           3 | Chen Demo        | 555-0103 | chen.demo@example.test        | TEST-0003 |
+|      107 | cancelled |        75.25 | 2026-09-15 08:55:00 |           4 | Dana Placeholder | 555-0104 | dana.placeholder@example.test | TEST-0004 |
+|      108 | shipped   |       560.00 | 2026-10-05 13:45:00 |           5 | Elif Fictional   | 555-0105 | elif.fictional@example.test   | TEST-0005 |
+|      109 | delivered |        99.99 | 2026-10-10 17:10:00 |           6 | Farid Mock       | 555-0106 | farid.mock@example.test       | TEST-0006 |
+|      110 | pending   |       210.40 | 2026-10-12 12:00:00 |           6 | Farid Mock       | 555-0106 | farid.mock@example.test       | TEST-0006 |
++----------+-----------+--------------+---------------------+-------------+------------------+----------+-------------------------------+-----------+
+10 rows in set (0.009 sec)
+
+--------------
+SELECT * FROM ddv_support.payments ORDER BY id
+--------------
+
++------+----------+--------+------------------+----------------+----------+
+| id   | order_id | method | card_number      | upi_id         | status   |
++------+----------+--------+------------------+----------------+----------+
+| 1001 |      101 | card   | 4111111111111111 | NULL           | captured |
+| 1002 |      102 | upi    | NULL             | asha@testbank  | captured |
+| 1003 |      103 | card   | 5555555555554444 | NULL           | captured |
+| 1004 |      104 | card   | 5555555555554444 | NULL           | refunded |
+| 1005 |      105 | upi    | NULL             | chen@testbank  | pending  |
+| 1006 |      106 | card   | 378282246310005  | NULL           | captured |
+| 1007 |      107 | card   | 6011111111111117 | NULL           | voided   |
+| 1008 |      108 | upi    | NULL             | elif@testbank  | captured |
+| 1009 |      109 | card   | 4242424242424242 | NULL           | captured |
+| 1010 |      110 | upi    | NULL             | farid@testbank | pending  |
++------+----------+--------+------------------+----------------+----------+
+10 rows in set (0.011 sec)
+
+--------------
+SELECT * FROM ddv_support.support_tickets ORDER BY id
+--------------
+
++----+-------------+---------------------------------+----------------------------------------------------------------------------------------------------------------------+
+| id | customer_id | subject                         | notes                                                                                                                |
++----+-------------+---------------------------------+----------------------------------------------------------------------------------------------------------------------+
+|  1 |           1 | Where is my order 102?          | Customer asked for tracking. Shipped 2026-09-20.                                                                     |
+|  2 |           2 | Refund for order 104            | Refund issued to original payment method.                                                                            |
+|  3 |           3 | Charge failed, please call back | Customer typed: my card is 5555555555554444 and you can reach me at chen.demo@example.test, please retry the charge. |
+|  4 |           5 | Change delivery address         | Address change requested before shipment.                                                                            |
+|  5 |           6 | Order 110 still pending         | Customer asked why payment is pending; UPI collect request sent.                                                     |
++----+-------------+---------------------------------+----------------------------------------------------------------------------------------------------------------------+
+5 rows in set (0.005 sec)
+
+--------------
+SET ROLE NONE
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+SELECT CURRENT_USER(), CURRENT_ROLE()
+--------------
+
++----------------+----------------+
+| CURRENT_USER() | CURRENT_ROLE() |
++----------------+----------------+
+| ddv_billing@%  | NONE           |
++----------------+----------------+
+1 row in set (0.001 sec)
+
+--------------
+SELECT * FROM ddv_support.customers ORDER BY id
+--------------
+
++----+------------------+----------+-------------------------------+-----------+
+| id | full_name        | phone    | email                         | tax_id    |
++----+------------------+----------+-------------------------------+-----------+
+|  1 | Asha Example     | ****0101 | a***********@example.test     | ********* |
+|  2 | Bilal Sample     | ****0102 | b***********@example.test     | ********* |
+|  3 | Chen Demo        | ****0103 | c********@example.test        | ********* |
+|  4 | Dana Placeholder | ****0104 | d***************@example.test | ********* |
+|  5 | Elif Fictional   | ****0105 | e*************@example.test   | ********* |
+|  6 | Farid Mock       | ****0106 | f*********@example.test       | ********* |
++----+------------------+----------+-------------------------------+-----------+
+6 rows in set (0.003 sec)
+
+Bye

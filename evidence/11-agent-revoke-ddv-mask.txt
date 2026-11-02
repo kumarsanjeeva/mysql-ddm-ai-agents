@@ -1,0 +1,18 @@
+--------------
+REVOKE SELECT ON ddv_mask.* FROM 'ddv_agent'@'%'
+--------------
+
+Query OK, 0 rows affected (0.212 sec)
+
+--------------
+SHOW GRANTS FOR 'ddv_agent'@'%'
+--------------
+
++---------------------------------------+
+| Grants for ddv_agent@%                |
++---------------------------------------+
+| GRANT USAGE ON *.* TO `ddv_agent`@`%` |
++---------------------------------------+
+1 row in set (0.008 sec)
+
+Bye

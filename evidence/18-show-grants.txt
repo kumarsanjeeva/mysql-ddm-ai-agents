@@ -1,0 +1,70 @@
+--------------
+SHOW GRANTS FOR 'ddv_agent'@'%'
+--------------
+
++--------------------------------------------------------------------+
+| Grants for ddv_agent@%                                             |
++--------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `ddv_agent`@`%`                              |
+| GRANT SELECT ON `ddv_support`.`customers` TO `ddv_agent`@`%`       |
+| GRANT SELECT ON `ddv_support`.`orders` TO `ddv_agent`@`%`          |
+| GRANT SELECT ON `ddv_support`.`payments` TO `ddv_agent`@`%`        |
+| GRANT SELECT ON `ddv_support`.`support_tickets` TO `ddv_agent`@`%` |
+| GRANT `r_support_agent`@`%` TO `ddv_agent`@`%`                     |
++--------------------------------------------------------------------+
+6 rows in set (0.004 sec)
+
+--------------
+SHOW GRANTS FOR 'ddv_billing'@'%'
+--------------
+
++----------------------------------------------------------------------+
+| Grants for ddv_billing@%                                             |
++----------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `ddv_billing`@`%`                              |
+| GRANT SELECT ON `ddv_support`.`customers` TO `ddv_billing`@`%`       |
+| GRANT SELECT ON `ddv_support`.`orders` TO `ddv_billing`@`%`          |
+| GRANT SELECT ON `ddv_support`.`payments` TO `ddv_billing`@`%`        |
+| GRANT SELECT ON `ddv_support`.`support_tickets` TO `ddv_billing`@`%` |
+| GRANT `r_billing_admin`@`%` TO `ddv_billing`@`%`                     |
++----------------------------------------------------------------------+
+6 rows in set (0.002 sec)
+
+--------------
+SHOW GRANTS FOR 'ddv_norole'@'%'
+--------------
+
++---------------------------------------------------------------------+
+| Grants for ddv_norole@%                                             |
++---------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `ddv_norole`@`%`                              |
+| GRANT SELECT ON `ddv_support`.`customers` TO `ddv_norole`@`%`       |
+| GRANT SELECT ON `ddv_support`.`orders` TO `ddv_norole`@`%`          |
+| GRANT SELECT ON `ddv_support`.`payments` TO `ddv_norole`@`%`        |
+| GRANT SELECT ON `ddv_support`.`support_tickets` TO `ddv_norole`@`%` |
++---------------------------------------------------------------------+
+5 rows in set (0.001 sec)
+
+--------------
+SHOW GRANTS FOR 'r_support_agent'@'%'
+--------------
+
++---------------------------------------------+
+| Grants for r_support_agent@%                |
++---------------------------------------------+
+| GRANT USAGE ON *.* TO `r_support_agent`@`%` |
++---------------------------------------------+
+1 row in set (0.001 sec)
+
+--------------
+SHOW GRANTS FOR 'r_billing_admin'@'%'
+--------------
+
++---------------------------------------------+
+| Grants for r_billing_admin@%                |
++---------------------------------------------+
+| GRANT USAGE ON *.* TO `r_billing_admin`@`%` |
++---------------------------------------------+
+1 row in set (0.001 sec)
+
+Bye

@@ -1,0 +1,61 @@
+--------------
+CREATE ROLE 'r_support_agent', 'r_billing_admin'
+--------------
+
+Query OK, 0 rows affected (0.046 sec)
+
+--------------
+GRANT 'r_support_agent' TO 'ddv_agent'@'%'
+--------------
+
+Query OK, 0 rows affected (0.041 sec)
+
+--------------
+GRANT 'r_billing_admin' TO 'ddv_billing'@'%'
+--------------
+
+Query OK, 0 rows affected (0.029 sec)
+
+--------------
+SET DEFAULT ROLE 'r_support_agent' TO 'ddv_agent'@'%'
+--------------
+
+Query OK, 0 rows affected (0.036 sec)
+
+--------------
+SET DEFAULT ROLE 'r_billing_admin' TO 'ddv_billing'@'%'
+--------------
+
+Query OK, 0 rows affected (0.017 sec)
+
+--------------
+GRANT SELECT ON ddv_support.customers       TO 'ddv_agent'@'%', 'ddv_billing'@'%', 'ddv_norole'@'%'
+--------------
+
+Query OK, 0 rows affected (0.029 sec)
+
+--------------
+GRANT SELECT ON ddv_support.orders          TO 'ddv_agent'@'%', 'ddv_billing'@'%', 'ddv_norole'@'%'
+--------------
+
+Query OK, 0 rows affected (0.028 sec)
+
+--------------
+GRANT SELECT ON ddv_support.payments        TO 'ddv_agent'@'%', 'ddv_billing'@'%', 'ddv_norole'@'%'
+--------------
+
+Query OK, 0 rows affected (0.031 sec)
+
+--------------
+GRANT SELECT ON ddv_support.support_tickets TO 'ddv_agent'@'%', 'ddv_billing'@'%', 'ddv_norole'@'%'
+--------------
+
+Query OK, 0 rows affected (0.040 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.003 sec)
+
+Bye
