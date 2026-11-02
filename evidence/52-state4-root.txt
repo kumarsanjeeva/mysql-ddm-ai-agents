@@ -1,0 +1,33 @@
+--------------
+GRANT 'r_billing_admin'@'%' TO 'ddv_owner2'@'%'
+--------------
+
+Query OK, 0 rows affected (0.036 sec)
+
+--------------
+SET DEFAULT ROLE ALL TO 'ddv_owner2'@'%'
+--------------
+
+Query OK, 0 rows affected (0.019 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+SHOW GRANTS FOR 'ddv_owner2'@'%'
+--------------
+
++------------------------------------------------------------------------+
+| Grants for ddv_owner2@%                                                |
++------------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `ddv_owner2`@`%`                                 |
+| GRANT SELECT ON `ddv_probe3`.`probe_people` TO `ddv_owner2`@`%`        |
+| GRANT EXECUTE ON PROCEDURE `ddv_probe3`.`p_owner2` TO `ddv_owner2`@`%` |
+| GRANT `r_billing_admin`@`%` TO `ddv_owner2`@`%`                        |
++------------------------------------------------------------------------+
+4 rows in set (0.001 sec)
+
+Bye

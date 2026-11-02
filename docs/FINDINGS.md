@@ -275,3 +275,50 @@ Files in sql/, agent/ and evidence/ not listed in section 10. Step 4 = commit 38
 | sql/42-copy-out-setup.sql | Step 4b | 9e4bd9c86f63965fb43f1e909a09a972bc67983734daf17879fc7910c324c38f |
 | sql/43-indexed-columns.sql | Step 4b | ffc7e196ea33384c8135d7b222c1df68f80c9ec46ef712da4c3e82d7fe51ae8e |
 | sql/46-cleanup.sql | Step 4b | 8aa78a47407445cddc62eed942c940d7529c4e40ad70d8c153d47fb760194380 |
+
+## 13. Step 4c findings (F39 onward)
+
+Added after earlier sections; earlier entries unchanged. All captured. Files are in evidence/ (52-*).
+
+- **F39.** (captured) State 1: with `ddv_owner2` holding `r_billing_admin` as default role (its `CURRENT_ROLE()` showed it), `SELECT * FROM v_owner2_definer` and `CALL p_owner2()` as `ddv_agent` returned real email, phone and notes. The agent had no privilege on the base table. (52-state1-root.txt, 52-state1-owner.txt, 52-state1-agent.txt)
+- **F40.** (captured) State 2: with the role still granted but `SET DEFAULT ROLE NONE`, the owner's `CURRENT_ROLE()` showed NONE and both the view and the procedure returned masked rows to the agent. (52-state2-*.txt)
+- **F41.** (captured) State 3: after `REVOKE` of the role, the owner's `CURRENT_ROLE()` showed NONE and both returned masked rows. (52-state3-*.txt)
+- **F42.** (captured) State 4: after granting the role again with `SET DEFAULT ROLE ALL`, the owner's `CURRENT_ROLE()` showed the role and both returned real values again, as in state 1. (52-state4-*.txt)
+- **F43.** (captured) Setup: policies `probe3_mask_email` and `probe3_mask_phone`, DEFINER view and procedure, and the agent's grants (SELECT on the view, EXECUTE on the procedure, nothing on the base table) are in 52-setup-root.txt.
+- **F44.** (captured) Cleanup removed `ddv_probe3`, both policies and `ddv_owner2`; the after snapshot compares equal to the baseline once timings are stripped. (52-cleanup.txt, 52-after.txt, 52-compare.txt)
+
+## 14. Evidence index additions (Step 4c)
+
+Files in sql/, agent/ and evidence/ not listed in earlier index sections. Step = Step 4c.
+
+| File | Step | SHA-256 |
+|---|---|---|
+| evidence/50-baseline.txt | Step 4c | 2a98853945f57074a45d4138744e31bcdb5489adad6f5025182e95a0946bd575 |
+| evidence/51-component-scripts-rest.txt | Step 4c | bf060bd6f3e6938afda81552aecc809911196fe3e5d73c68af6c271fbe26a252 |
+| evidence/52-after.txt | Step 4c | caad39c28d2c4e4ea48c07be1562da5e82a353704406930f54150af1eaad18d6 |
+| evidence/52-cleanup.txt | Step 4c | 439e4e4edee379ab8f9c6776a5fe65d3658a18e50f93009f639b2d1d0f26fd18 |
+| evidence/52-compare.txt | Step 4c | 6dd2fba8f0b1d4c6d9312bb7e8e7c0eb3e836e46102e7a1a4ca9c431b0662024 |
+| evidence/52-setup-root.txt | Step 4c | fa1641b71803b1c9e7364ed6947b81ba1754475ec1321621e5224c1ebf9b2b5d |
+| evidence/52-state1-agent.txt | Step 4c | 5a082ba90e6c70e852f262d4ca8a5266d06a751c52c08ec37f42ffcb0519c23e |
+| evidence/52-state1-owner.txt | Step 4c | 198750f65e58eace9a089bbcc20315004697801e0092a8cae8cac9e3e60084bc |
+| evidence/52-state1-root.txt | Step 4c | 11323919ff5f3b8083be60a55463340cce7f18c95b5070432788884eb51d9442 |
+| evidence/52-state2-agent.txt | Step 4c | 718bf8431e68dcfe7dcf6d0be2d0db65bfea0c609bf003c996ffbfccc3712222 |
+| evidence/52-state2-owner.txt | Step 4c | 5a87bc3e2f5f4ad11a2f76de2ae9b708737957fef0a46b9b06767c6b92d99179 |
+| evidence/52-state2-root.txt | Step 4c | f14e3a26e57cf1f365f00eb3fe53f767288aad7efde5c5511c1110cf17177278 |
+| evidence/52-state3-agent.txt | Step 4c | c44edae51f832a3eb6a92651137b7edad51068c3cf524fbcc0ebf94c045e828a |
+| evidence/52-state3-owner.txt | Step 4c | 9c47d880bdf71814cfa1650db2e9ef588d847eb557e3127deb86887235d4144b |
+| evidence/52-state3-root.txt | Step 4c | abc245b318dc253e7c6b137be7a7e78ecbb6649cf879fbcb462b5341ad5533c0 |
+| evidence/52-state4-agent.txt | Step 4c | 997ab9d40e6cfbae2b8b02b7ae518fd468008d27e6139adbdd44f00c1937adc7 |
+| evidence/52-state4-owner.txt | Step 4c | 764eedc853bfbe33e75d9a9e620d723ee239d7d0718e8ef6159e1bd48efccd67 |
+| evidence/52-state4-root.txt | Step 4c | 40655df77aeec5072d51ea71409ef22d010251f0f938f7812d0befd9c483b6f3 |
+| evidence/REPORT-06.md | Step 4c | d464f5a4650961047ef33c5cb1b62bf4ef4e28edcc166849cdb5f22830a814ed |
+| sql/50-snapshot.sql | Step 4c | 6e00930c9834a54bdd571c826076d5409774ed7365edc701756891ef5e07393e |
+| sql/52-agent.sql | Step 4c | fc6bf0fcd7e92be3461a12bafb568a19dad1aa6768f26bc63b3a29e75c7b017f |
+| sql/52-cleanup.sql | Step 4c | b0cae2b7a18733aad5119facec54fa8df723e1a2df30a689f0e18d99e25f57a2 |
+| sql/52-create-owner2.template.sql | Step 4c | 0db2594d9d9fda8c5536a4f343494ea8a4e68d48ef0db799df586585a1df8438 |
+| sql/52-owner.sql | Step 4c | deed806ecd9af9d8a39d7fa1d34dc4bec0764df0fcfcaf3dbcb8d70d31142eaf |
+| sql/52-setup.sql | Step 4c | 52af816435d3bfeeb5007c9a85d2de1e87f144a7dfc376abc8205b7e81696529 |
+| sql/52-state1-root.sql | Step 4c | 20e4d35425ac037374f942c0283a67cc5ede6e64fc75bc57d83a6fc245143e65 |
+| sql/52-state2-root.sql | Step 4c | 8361a4889898f0a30f59a5d06250ebed29dfacd98bbf3938582881293a96d693 |
+| sql/52-state3-root.sql | Step 4c | e38fde03abf05fb7dec2897ad3d4e03c626c054b141160160d434eec9451a22c |
+| sql/52-state4-root.sql | Step 4c | f3aece4fb4d47b570fc6fc2ac193739f6b1387a588288f762210994b424b5f25 |

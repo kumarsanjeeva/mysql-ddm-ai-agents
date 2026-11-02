@@ -1,0 +1,97 @@
+--------------
+REVOKE SELECT ON ddv_probe3.v_owner2_definer FROM 'ddv_agent'@'%'
+--------------
+
+Query OK, 0 rows affected (0.034 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+REVOKE EXECUTE ON PROCEDURE ddv_probe3.p_owner2 FROM 'ddv_agent'@'%'
+--------------
+
+Query OK, 0 rows affected (0.023 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+REVOKE SELECT ON ddv_probe3.probe_people FROM 'ddv_owner2'@'%'
+--------------
+
+Query OK, 0 rows affected (0.013 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+REVOKE EXECUTE ON PROCEDURE ddv_probe3.p_owner2 FROM 'ddv_owner2'@'%'
+--------------
+
+Query OK, 0 rows affected (0.017 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+DROP SCHEMA ddv_probe3
+--------------
+
+Query OK, 2 rows affected (0.092 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+DROP MASKING POLICY IF EXISTS probe3_mask_email
+--------------
+
+Query OK, 0 rows affected (0.016 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+DROP MASKING POLICY IF EXISTS probe3_mask_phone
+--------------
+
+Query OK, 0 rows affected (0.016 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.003 sec)
+
+--------------
+DROP USER 'ddv_owner2'@'%'
+--------------
+
+Query OK, 0 rows affected (0.021 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+Bye

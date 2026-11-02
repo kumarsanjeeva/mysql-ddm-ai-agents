@@ -1,0 +1,16 @@
+REVOKE SELECT ON ddv_probe3.v_owner2_definer FROM 'ddv_agent'@'%';
+SHOW WARNINGS;
+REVOKE EXECUTE ON PROCEDURE ddv_probe3.p_owner2 FROM 'ddv_agent'@'%';
+SHOW WARNINGS;
+REVOKE SELECT ON ddv_probe3.probe_people FROM 'ddv_owner2'@'%';
+SHOW WARNINGS;
+REVOKE EXECUTE ON PROCEDURE ddv_probe3.p_owner2 FROM 'ddv_owner2'@'%';
+SHOW WARNINGS;
+DROP SCHEMA ddv_probe3;
+SHOW WARNINGS;
+DROP MASKING POLICY IF EXISTS probe3_mask_email;
+SHOW WARNINGS;
+DROP MASKING POLICY IF EXISTS probe3_mask_phone;
+SHOW WARNINGS;
+DROP USER 'ddv_owner2'@'%';
+SHOW WARNINGS;

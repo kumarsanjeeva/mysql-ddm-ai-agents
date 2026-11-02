@@ -1,0 +1,10 @@
+SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'ddv%';
+SELECT policy_name FROM mysql.column_masking_policies ORDER BY 1;
+SHOW GRANTS FOR 'ddv_agent'@'%';
+SHOW GRANTS FOR 'ddv_billing'@'%';
+SHOW GRANTS FOR 'ddv_norole'@'%';
+SELECT * FROM mysql.component;
+SELECT PLUGIN_NAME, PLUGIN_STATUS FROM information_schema.PLUGINS WHERE PLUGIN_NAME LIKE '%audit%' OR PLUGIN_NAME LIKE '%firewall%';
+SHOW VARIABLES LIKE '%firewall%';
+SHOW VARIABLES LIKE '%audit%';
+SELECT * FROM performance_schema.persisted_variables;

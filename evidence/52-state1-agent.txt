@@ -1,0 +1,46 @@
+--------------
+USE ddv_probe3
+--------------
+
+Query OK, 0 rows affected (0.003 sec)
+
+--------------
+SELECT CURRENT_USER(), CURRENT_ROLE()
+--------------
+
++----------------+-----------------------+
+| CURRENT_USER() | CURRENT_ROLE()        |
++----------------+-----------------------+
+| ddv_agent@%    | `r_support_agent`@`%` |
++----------------+-----------------------+
+1 row in set (0.002 sec)
+
+--------------
+SELECT * FROM v_owner2_definer
+--------------
+
++----+------------------------+----------+------------+
+| id | email                  | phone    | notes      |
++----+------------------------+----------+------------+
+|  1 | mark.zzzz@example.test | 555-0101 | note one   |
+|  2 | mark.aaaa@example.test | 777-0101 | note two   |
+|  3 | lena.mmmm@example.test | 555-0303 | note three |
++----+------------------------+----------+------------+
+3 rows in set (0.017 sec)
+
+--------------
+CALL p_owner2()
+--------------
+
++----+------------------------+----------+------------+
+| id | email                  | phone    | notes      |
++----+------------------------+----------+------------+
+|  1 | mark.zzzz@example.test | 555-0101 | note one   |
+|  2 | mark.aaaa@example.test | 777-0101 | note two   |
+|  3 | lena.mmmm@example.test | 555-0303 | note three |
++----+------------------------+----------+------------+
+3 rows in set (0.007 sec)
+
+Query OK, 0 rows affected (0.007 sec)
+
+Bye

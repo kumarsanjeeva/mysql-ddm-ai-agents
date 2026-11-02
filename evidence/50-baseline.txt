@@ -1,0 +1,119 @@
+--------------
+SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'ddv%'
+--------------
+
++-------------+
+| SCHEMA_NAME |
++-------------+
+| ddv_mask    |
+| ddv_support |
++-------------+
+2 rows in set (0.030 sec)
+
+--------------
+SELECT policy_name FROM mysql.column_masking_policies ORDER BY 1
+--------------
+
++-----------------+
+| policy_name     |
++-----------------+
+| mask_email      |
+| mask_phone      |
+| sup_mask_card   |
+| sup_mask_email  |
+| sup_mask_phone  |
+| sup_mask_tax_id |
+| sup_mask_upi    |
++-----------------+
+7 rows in set (0.006 sec)
+
+--------------
+SHOW GRANTS FOR 'ddv_agent'@'%'
+--------------
+
++--------------------------------------------------------------------+
+| Grants for ddv_agent@%                                             |
++--------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `ddv_agent`@`%`                              |
+| GRANT SELECT ON `ddv_support`.`customers` TO `ddv_agent`@`%`       |
+| GRANT SELECT ON `ddv_support`.`orders` TO `ddv_agent`@`%`          |
+| GRANT SELECT ON `ddv_support`.`payments` TO `ddv_agent`@`%`        |
+| GRANT SELECT ON `ddv_support`.`support_tickets` TO `ddv_agent`@`%` |
+| GRANT `r_support_agent`@`%` TO `ddv_agent`@`%`                     |
++--------------------------------------------------------------------+
+6 rows in set (0.002 sec)
+
+--------------
+SHOW GRANTS FOR 'ddv_billing'@'%'
+--------------
+
++----------------------------------------------------------------------+
+| Grants for ddv_billing@%                                             |
++----------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `ddv_billing`@`%`                              |
+| GRANT SELECT ON `ddv_support`.`customers` TO `ddv_billing`@`%`       |
+| GRANT SELECT ON `ddv_support`.`orders` TO `ddv_billing`@`%`          |
+| GRANT SELECT ON `ddv_support`.`payments` TO `ddv_billing`@`%`        |
+| GRANT SELECT ON `ddv_support`.`support_tickets` TO `ddv_billing`@`%` |
+| GRANT `r_billing_admin`@`%` TO `ddv_billing`@`%`                     |
++----------------------------------------------------------------------+
+6 rows in set (0.001 sec)
+
+--------------
+SHOW GRANTS FOR 'ddv_norole'@'%'
+--------------
+
++---------------------------------------------------------------------+
+| Grants for ddv_norole@%                                             |
++---------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `ddv_norole`@`%`                              |
+| GRANT SELECT ON `ddv_support`.`customers` TO `ddv_norole`@`%`       |
+| GRANT SELECT ON `ddv_support`.`orders` TO `ddv_norole`@`%`          |
+| GRANT SELECT ON `ddv_support`.`payments` TO `ddv_norole`@`%`        |
+| GRANT SELECT ON `ddv_support`.`support_tickets` TO `ddv_norole`@`%` |
++---------------------------------------------------------------------+
+5 rows in set (0.001 sec)
+
+--------------
+SELECT * FROM mysql.component
+--------------
+
++--------------+--------------------+------------------------------------+
+| component_id | component_group_id | component_urn                      |
++--------------+--------------------+------------------------------------+
+|            1 |                  1 | file://component_masking           |
+|            2 |                  2 | file://component_masking_functions |
+|            3 |                  3 | file://component_object_policy     |
++--------------+--------------------+------------------------------------+
+3 rows in set (0.008 sec)
+
+--------------
+SELECT PLUGIN_NAME, PLUGIN_STATUS FROM information_schema.PLUGINS WHERE PLUGIN_NAME LIKE '%audit%' OR PLUGIN_NAME LIKE '%firewall%'
+--------------
+
+Empty set (0.028 sec)
+
+--------------
+SHOW VARIABLES LIKE '%firewall%'
+--------------
+
+Empty set (0.065 sec)
+
+--------------
+SHOW VARIABLES LIKE '%audit%'
+--------------
+
+Empty set (0.011 sec)
+
+--------------
+SELECT * FROM performance_schema.persisted_variables
+--------------
+
++---------------------------------+----------------+
+| VARIABLE_NAME                   | VARIABLE_VALUE |
++---------------------------------+----------------+
+| log_bin_trust_function_creators | ON             |
++---------------------------------+----------------+
+1 row in set (0.068 sec)
+
+Bye
