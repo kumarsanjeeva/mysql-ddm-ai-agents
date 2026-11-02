@@ -1,0 +1,4 @@
+sql/* -text
+evidence/* -text
+agent/* -text
+docs/* -text
