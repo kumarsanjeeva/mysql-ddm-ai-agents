@@ -69,7 +69,7 @@ I have not listed every flag of every run here. The evidence files show the stat
 Run it on a throwaway server.
 
 - The Enterprise MSI can upgrade an existing Community install in place. I saw this on a machine with Community 9.7.2 (`docs/FINDINGS.md`, section 2).
-- Audit writes log files into the data directory. I did not check what is left there after uninstall, because access to that folder was denied (F65). Check it yourself.
+- Audit log files stay in the data directory after the uninstall scripts run. After three Audit uninstalls I found three `audit.<timestamp>.log` files there (live observation by the author, names and sizes only, contents not read; `docs/FINDINGS.md`, section 29). They probably hold the audited statement text, so treat them as sensitive and remove them yourself.
 - The Firewall install persists the setting `component_firewall.database`. It stays after uninstall until you run `RESET PERSIST component_firewall.database` (F51, F92).
 
 ## What was and wasn't tested
