@@ -1,0 +1,15 @@
+--------------
+SHOW GLOBAL STATUS LIKE 'firewall%'
+--------------
+
++----------------------------+-------+
+| Variable_name              | Value |
++----------------------------+-------+
+| firewall_access_denied     | 9     |
+| firewall_access_granted    | 23    |
+| firewall_access_suspicious | 0     |
+| firewall_cached_entries    | 10    |
++----------------------------+-------+
+4 rows in set (0.016 sec)
+
+Bye

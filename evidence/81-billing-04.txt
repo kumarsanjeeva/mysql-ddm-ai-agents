@@ -1,0 +1,25 @@
+--------------
+SELECT CURRENT_USER(), CURRENT_ROLE()
+--------------
+
++----------------+-----------------------+
+| CURRENT_USER() | CURRENT_ROLE()        |
++----------------+-----------------------+
+| ddv_billing@%  | `r_billing_admin`@`%` |
++----------------+-----------------------+
+1 row in set (0.011 sec)
+
+--------------
+SELECT id, SUBSTRING(email,1,6), SUBSTRING_INDEX(email,'@',1) FROM probe_people ORDER BY id
+--------------
+
++----+----------------------+------------------------------+
+| id | SUBSTRING(email,1,6) | SUBSTRING_INDEX(email,'@',1) |
++----+----------------------+------------------------------+
+|  1 | mark.z               | mark.zzzz                    |
+|  2 | mark.a               | mark.aaaa                    |
+|  3 | lena.m               | lena.mmmm                    |
++----+----------------------+------------------------------+
+3 rows in set (0.019 sec)
+
+Bye

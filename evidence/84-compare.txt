@@ -1,0 +1,6 @@
+Compare-Object evidence\80-baseline.txt evidence\84-after.txt, with (n.nnn sec) timings stripped; differences listed below (nothing listed = identical).
+
+InputObject                                           SideIndicator
+-----------                                           -------------
+| 375 | root            | localhost:62091 | Query   | =>           
+| 231 | root            | localhost:53514 | Query   | <=

@@ -1,0 +1,23 @@
+--------------
+SELECT CURRENT_USER(), CURRENT_ROLE()
+--------------
+
++----------------+-----------------------+
+| CURRENT_USER() | CURRENT_ROLE()        |
++----------------+-----------------------+
+| ddv_billing@%  | `r_billing_admin`@`%` |
++----------------+-----------------------+
+1 row in set (0.009 sec)
+
+--------------
+SELECT id FROM probe_people WHERE phone IN (SELECT phone FROM probe_people WHERE id = 1) ORDER BY id
+--------------
+
++----+
+| id |
++----+
+|  1 |
++----+
+1 row in set (0.024 sec)
+
+Bye

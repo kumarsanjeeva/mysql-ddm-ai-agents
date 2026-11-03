@@ -1,0 +1,132 @@
+--------------
+CREATE SCHEMA ddv_probe4
+--------------
+
+Query OK, 1 row affected (0.113 sec)
+
+--------------
+USE ddv_probe4
+--------------
+
+Query OK, 0 rows affected (0.004 sec)
+
+--------------
+CREATE TABLE probe_alter (
+  id INT PRIMARY KEY,
+  phone VARCHAR(20),
+  notes TEXT
+)
+--------------
+
+Query OK, 0 rows affected (0.273 sec)
+
+--------------
+INSERT INTO probe_alter VALUES
+  (1, '555-0101', 'note one'),
+  (2, '777-0101', 'note two'),
+  (3, '555-0303', 'note three')
+--------------
+
+Query OK, 3 rows affected (0.055 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.002 sec)
+
+--------------
+CREATE MASKING POLICY probe4_mask_phone(phone_column)
+CASE WHEN CURRENT_ROLE_IN('r_billing_admin')
+     THEN phone_column
+     ELSE mask_inner(phone_column, 0, 4, '*')
+END
+--------------
+
+Query OK, 0 rows affected (0.051 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.004 sec)
+
+--------------
+ALTER TABLE probe_alter MODIFY COLUMN phone VARCHAR(20) MASKING POLICY probe4_mask_phone
+--------------
+
+Query OK, 0 rows affected (0.105 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+GRANT SELECT, ALTER, INSERT, UPDATE ON ddv_probe4.probe_alter TO 'ddv_alterer'@'%'
+--------------
+
+Query OK, 0 rows affected (0.034 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.005 sec)
+
+--------------
+SHOW GRANTS FOR 'ddv_alterer'@'%'
+--------------
+
++----------------------------------------------------------------------------------------+
+| Grants for ddv_alterer@%                                                               |
++----------------------------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `ddv_alterer`@`%`                                                |
+| GRANT SELECT, INSERT, UPDATE, ALTER ON `ddv_probe4`.`probe_alter` TO `ddv_alterer`@`%` |
++----------------------------------------------------------------------------------------+
+2 rows in set (0.009 sec)
+
+--------------
+SHOW CREATE TABLE probe_alter
+--------------
+
++-------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Table       | Create Table                                                                                                                                                                                                                     |
++-------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| probe_alter | CREATE TABLE `probe_alter` (
+  `id` int NOT NULL,
+  `phone` varchar(20) MASKING POLICY `probe4_mask_phone` DEFAULT NULL,
+  `notes` text,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci |
++-------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+1 row in set (0.039 sec)
+
+--------------
+SELECT * FROM probe_alter
+--------------
+
++----+----------+------------+
+| id | phone    | notes      |
++----+----------+------------+
+|  1 | ****0101 | note one   |
+|  2 | ****0101 | note two   |
+|  3 | ****0303 | note three |
++----+----------+------------+
+3 rows in set (0.005 sec)
+
+--------------
+SELECT policy_name FROM mysql.column_masking_policies WHERE policy_name LIKE 'probe4%'
+--------------
+
++-------------------+
+| policy_name       |
++-------------------+
+| probe4_mask_phone |
++-------------------+
+1 row in set (0.005 sec)
+
+Bye

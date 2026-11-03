@@ -1,0 +1,38 @@
+Extract of audit_log_read output (36 events, from the server-start event of this run, read in pages of 40). Raw JSON not saved: it contained a local path, the machine name and the OS user name. Kept per event: class/event, account, command class, status, statement text. Timestamps, ids, IP, OS user and connection attributes are omitted.
+n | class/event | account | command class | status | statement text
+1 | audit/startup | root@localhost | (server startup) |  | 
+2 | connection/connect | ddv_agent@localhost | ssl | 0 | 
+3 | general/status | ddv_agent@localhost | Query/select | 0 | select @@version_comment limit 1
+4 | general/status | ddv_agent@localhost | Query/error | 1064 | select $$
+5 | general/status | ddv_agent@localhost | Query/show_status | 0 | SHOW STATUS LIKE 'audit_log%'
+6 | connection/disconnect | ddv_agent@localhost | ssl |  | 
+7 | connection/connect | ddv_billing@localhost | ssl | 0 | 
+8 | general/status | ddv_billing@localhost | Query/select | 0 | select @@version_comment limit 1
+9 | general/status | ddv_billing@localhost | Query/error | 1064 | select $$
+10 | general/status | ddv_billing@localhost | Query/show_status | 0 | SHOW STATUS LIKE 'audit_log%'
+11 | connection/disconnect | ddv_billing@localhost | ssl |  | 
+12 | connection/connect | ddv_agent@localhost | ssl | 0 | 
+13 | general/status | ddv_agent@localhost | Query/select | 0 | select @@version_comment limit 1
+14 | general/status | ddv_agent@localhost | Query/error | 1064 | select $$
+15 | table_access/read | ddv_agent@localhost | select |  | SELECT COUNT(*) FROM ddv_support.orders
+16 | general/status | ddv_agent@localhost | Query/select | 0 | SELECT COUNT(*) FROM ddv_support.orders
+17 | connection/disconnect | ddv_agent@localhost | ssl |  | 
+18 | connection/connect | ddv_billing@localhost | ssl | 0 | 
+19 | general/status | ddv_billing@localhost | Query/select | 0 | select @@version_comment limit 1
+20 | general/status | ddv_billing@localhost | Query/error | 1064 | select $$
+21 | table_access/read | ddv_billing@localhost | select |  | SELECT COUNT(*) FROM ddv_support.orders
+22 | general/status | ddv_billing@localhost | Query/select | 0 | SELECT COUNT(*) FROM ddv_support.orders
+23 | connection/disconnect | ddv_billing@localhost | ssl |  | 
+24 | connection/connect | root@localhost | ssl | 0 | 
+25 | general/status | root@localhost | Query/select | 0 | select @@version_comment limit 1
+26 | general/status | root@localhost | Query/error | 1064 | select $$
+27 | general/status | root@localhost | Query/create_user | 0 | CREATE USER 'ddv_pwtest'@'%' IDENTIFIED BY <secret>
+28 | general/status | root@localhost | Query/alter_user | 0 | ALTER USER 'ddv_pwtest'@'%' IDENTIFIED BY <secret>
+29 | general/status | root@localhost | Query/set_password | 0 | SET PASSWORD FOR `ddv_pwtest`@`%`=<secret>
+30 | general/status | root@localhost | Query/select | 0 | SELECT 'SENTINEL-FAKE-PW-0004'
+31 | connection/disconnect | root@localhost | ssl |  | 
+32 | connection/connect | root@localhost | ssl | 0 | 
+33 | general/status | root@localhost | Query/select | 0 | select @@version_comment limit 1
+34 | general/status | root@localhost | Query/error | 1064 | select $$
+35 | general/status | root@localhost | Query/select | 0 | SELECT audit_log_filter_remove_user('root@localhost')
+36 | connection/disconnect | root@localhost | ssl |  | 

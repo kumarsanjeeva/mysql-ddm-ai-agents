@@ -1,0 +1,2 @@
+SELECT CURRENT_USER(), CURRENT_ROLE();
+SELECT id, HEX(email) FROM probe_people ORDER BY id;

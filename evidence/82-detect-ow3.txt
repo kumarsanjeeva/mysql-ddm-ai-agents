@@ -1,0 +1,12 @@
+--------------
+SELECT full_name FROM ddv_support.customers WHERE email LIKE 'a%'
+--------------
+
++--------------+
+| full_name    |
++--------------+
+| Asha Example |
++--------------+
+1 row in set (0.006 sec)
+
+Bye

@@ -1,0 +1,2 @@
+SELECT CURRENT_USER(), CURRENT_ROLE();
+SELECT phone, GROUP_CONCAT(id ORDER BY id) FROM probe_people GROUP BY phone;

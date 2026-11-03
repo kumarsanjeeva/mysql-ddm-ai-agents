@@ -1,0 +1,25 @@
+--------------
+CALL ddv_sec.sp_set_firewall_group_mode('fw_agent', 'DETECTING')
+--------------
+
+Query OK, 0 rows affected (0.214 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.003 sec)
+
+--------------
+SELECT * FROM performance_schema.firewall_groups
+--------------
+
++-----------+------------+--------------+
+| NAME      | MODE       | USERHOST     |
++-----------+------------+--------------+
+| fw_agent  | DETECTING  | ddv_agent@%  |
+| fw_norole | PROTECTING | ddv_norole@% |
++-----------+------------+--------------+
+2 rows in set (0.002 sec)
+
+Bye

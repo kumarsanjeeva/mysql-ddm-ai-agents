@@ -1,0 +1,30 @@
+--------------
+CREATE USER 'ddv_pwtest'@'%' IDENTIFIED BY 'SENTINEL-FAKE-PW-0001'
+--------------
+
+Query OK, 0 rows affected (0.255 sec)
+
+--------------
+ALTER USER 'ddv_pwtest'@'%' IDENTIFIED BY 'SENTINEL-FAKE-PW-0002'
+--------------
+
+Query OK, 0 rows affected (0.136 sec)
+
+--------------
+SET PASSWORD FOR 'ddv_pwtest'@'%' = 'SENTINEL-FAKE-PW-0003'
+--------------
+
+Query OK, 0 rows affected (0.081 sec)
+
+--------------
+SELECT 'SENTINEL-FAKE-PW-0004'
+--------------
+
++-----------------------+
+| SENTINEL-FAKE-PW-0004 |
++-----------------------+
+| SENTINEL-FAKE-PW-0004 |
++-----------------------+
+1 row in set (0.004 sec)
+
+Bye

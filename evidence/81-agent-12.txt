@@ -1,0 +1,18 @@
+--------------
+SELECT CURRENT_USER(), CURRENT_ROLE()
+--------------
+
++----------------+-----------------------+
+| CURRENT_USER() | CURRENT_ROLE()        |
++----------------+-----------------------+
+| ddv_agent@%    | `r_support_agent`@`%` |
++----------------+-----------------------+
+1 row in set (0.010 sec)
+
+--------------
+SELECT id FROM probe_people WHERE email = 'mark.zzzz@example.test'
+--------------
+
+Empty set (0.020 sec)
+
+Bye

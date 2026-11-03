@@ -1,0 +1,1 @@
+ALTER TABLE probe_alter MODIFY COLUMN phone VARCHAR(20);

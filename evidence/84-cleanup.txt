@@ -1,0 +1,164 @@
+--------------
+REVOKE SELECT, ALTER, INSERT, UPDATE ON ddv_probe4.probe_alter FROM 'ddv_alterer'@'%'
+--------------
+
+Query OK, 0 rows affected (0.232 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.012 sec)
+
+--------------
+REVOKE SELECT ON ddv_probe4.probe_people FROM 'ddv_agent'@'%'
+--------------
+
+Query OK, 0 rows affected (0.079 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.007 sec)
+
+--------------
+REVOKE SELECT ON ddv_probe4.probe_people FROM 'ddv_billing'@'%'
+--------------
+
+Query OK, 0 rows affected (0.072 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.009 sec)
+
+--------------
+SHOW GRANTS FOR 'ddv_alterer'@'%'
+--------------
+
++-----------------------------------------+
+| Grants for ddv_alterer@%                |
++-----------------------------------------+
+| GRANT USAGE ON *.* TO `ddv_alterer`@`%` |
++-----------------------------------------+
+1 row in set (0.011 sec)
+
+--------------
+DROP SCHEMA ddv_probe4
+--------------
+
+Query OK, 2 rows affected (0.530 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.006 sec)
+
+--------------
+DROP MASKING POLICY IF EXISTS probe4_mask_phone
+--------------
+
+Query OK, 0 rows affected (0.062 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.005 sec)
+
+--------------
+DROP MASKING POLICY IF EXISTS probe4_mask_email
+--------------
+
+Query OK, 0 rows affected (0.076 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.007 sec)
+
+--------------
+DROP MASKING POLICY IF EXISTS probe4_mask_phone2
+--------------
+
+Query OK, 0 rows affected (0.062 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.006 sec)
+
+--------------
+DROP USER 'ddv_alterer'@'%'
+--------------
+
+Query OK, 0 rows affected (0.066 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.006 sec)
+
+--------------
+SELECT policy_name FROM mysql.column_masking_policies WHERE policy_name LIKE 'probe4%'
+--------------
+
+Empty set (0.009 sec)
+
+--------------
+SELECT user FROM mysql.user WHERE user IN ('ddv_alterer','ddv_pwtest')
+--------------
+
+Empty set (0.012 sec)
+
+--------------
+SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'ddv%'
+--------------
+
++-------------+
+| SCHEMA_NAME |
++-------------+
+| ddv_mask    |
+| ddv_support |
++-------------+
+2 rows in set (0.025 sec)
+
+--------------
+SHOW GRANTS FOR 'ddv_agent'@'%'
+--------------
+
++--------------------------------------------------------------------+
+| Grants for ddv_agent@%                                             |
++--------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `ddv_agent`@`%`                              |
+| GRANT SELECT ON `ddv_support`.`customers` TO `ddv_agent`@`%`       |
+| GRANT SELECT ON `ddv_support`.`orders` TO `ddv_agent`@`%`          |
+| GRANT SELECT ON `ddv_support`.`payments` TO `ddv_agent`@`%`        |
+| GRANT SELECT ON `ddv_support`.`support_tickets` TO `ddv_agent`@`%` |
+| GRANT `r_support_agent`@`%` TO `ddv_agent`@`%`                     |
++--------------------------------------------------------------------+
+6 rows in set (0.008 sec)
+
+--------------
+SHOW GRANTS FOR 'ddv_billing'@'%'
+--------------
+
++----------------------------------------------------------------------+
+| Grants for ddv_billing@%                                             |
++----------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `ddv_billing`@`%`                              |
+| GRANT SELECT ON `ddv_support`.`customers` TO `ddv_billing`@`%`       |
+| GRANT SELECT ON `ddv_support`.`orders` TO `ddv_billing`@`%`          |
+| GRANT SELECT ON `ddv_support`.`payments` TO `ddv_billing`@`%`        |
+| GRANT SELECT ON `ddv_support`.`support_tickets` TO `ddv_billing`@`%` |
+| GRANT `r_billing_admin`@`%` TO `ddv_billing`@`%`                     |
++----------------------------------------------------------------------+
+6 rows in set (0.023 sec)
+
+Bye

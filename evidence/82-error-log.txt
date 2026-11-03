@@ -1,0 +1,29 @@
+--------------
+SELECT LOGGED, PRIO, SUBSYSTEM, DATA FROM performance_schema.error_log WHERE DATA LIKE '%irewall%' ORDER BY LOGGED DESC LIMIT 40
+--------------
+
+Empty set (0.012 sec)
+
+--------------
+SHOW VARIABLES LIKE 'log_error_verbosity'
+--------------
+
++---------------------+-------+
+| Variable_name       | Value |
++---------------------+-------+
+| log_error_verbosity | 2     |
++---------------------+-------+
+1 row in set (0.052 sec)
+
+--------------
+SHOW VARIABLES LIKE 'component_firewall.trace'
+--------------
+
++--------------------------+-------+
+| Variable_name            | Value |
++--------------------------+-------+
+| component_firewall.trace | OFF   |
++--------------------------+-------+
+1 row in set (0.044 sec)
+
+Bye

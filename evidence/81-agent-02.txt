@@ -1,0 +1,25 @@
+--------------
+SELECT CURRENT_USER(), CURRENT_ROLE()
+--------------
+
++----------------+-----------------------+
+| CURRENT_USER() | CURRENT_ROLE()        |
++----------------+-----------------------+
+| ddv_agent@%    | `r_support_agent`@`%` |
++----------------+-----------------------+
+1 row in set (0.008 sec)
+
+--------------
+SELECT phone, GROUP_CONCAT(id ORDER BY id) FROM probe_people GROUP BY phone
+--------------
+
++----------+------------------------------+
+| phone    | GROUP_CONCAT(id ORDER BY id) |
++----------+------------------------------+
+| ****0101 | 1,2                          |
+| ****0303 | 3                            |
++----------+------------------------------+
+2 rows in set, 1 warning (0.173 sec)
+
+Warning (Code 1052): Column 'phone' in group statement is ambiguous
+Bye

@@ -1,0 +1,17 @@
+--------------
+SELECT * FROM ddv_support.customers
+--------------
+
++----+------------------+----------+-------------------------------+-----------+
+| id | full_name        | phone    | email                         | tax_id    |
++----+------------------+----------+-------------------------------+-----------+
+|  1 | Asha Example     | 555-0101 | asha.example@example.test     | TEST-0001 |
+|  2 | Bilal Sample     | 555-0102 | bilal.sample@example.test     | TEST-0002 |
+|  3 | Chen Demo        | 555-0103 | chen.demo@example.test        | TEST-0003 |
+|  4 | Dana Placeholder | 555-0104 | dana.placeholder@example.test | TEST-0004 |
+|  5 | Elif Fictional   | 555-0105 | elif.fictional@example.test   | TEST-0005 |
+|  6 | Farid Mock       | 555-0106 | farid.mock@example.test       | TEST-0006 |
++----+------------------+----------+-------------------------------+-----------+
+6 rows in set (0.016 sec)
+
+Bye

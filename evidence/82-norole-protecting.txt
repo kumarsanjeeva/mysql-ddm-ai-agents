@@ -1,0 +1,37 @@
+--------------
+CALL ddv_sec.sp_set_firewall_group_mode('fw_norole', 'PROTECTING')
+--------------
+
+Query OK, 0 rows affected (0.190 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.006 sec)
+
+--------------
+SELECT * FROM performance_schema.firewall_groups
+--------------
+
++-----------+------------+--------------+
+| NAME      | MODE       | USERHOST     |
++-----------+------------+--------------+
+| fw_agent  | PROTECTING | ddv_agent@%  |
+| fw_norole | PROTECTING | ddv_norole@% |
++-----------+------------+--------------+
+2 rows in set (0.004 sec)
+
+--------------
+SELECT * FROM performance_schema.firewall_group_allowlist WHERE NAME = 'fw_norole'
+--------------
+
++-----------+--------------------------------------------------+
+| NAME      | RULE                                             |
++-----------+--------------------------------------------------+
+| fw_norole | SELECT @@`version_comment` LIMIT ?               |
+| fw_norole | SELECT COUNT ( * ) FROM `ddv_support` . `orders` |
++-----------+--------------------------------------------------+
+2 rows in set (0.006 sec)
+
+Bye

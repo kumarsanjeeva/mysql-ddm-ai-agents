@@ -90,15 +90,15 @@ All are captured tests unless stated.
 
 ## 7. Not tested
 
-- MySQL Enterprise Audit: the Step 5 install into `ddv_sec` failed (F54 to F57); the Step 6 install into `mysql` worked (F58 to F65). Still not tested: statements containing passwords, log rotation, pruning, encryption, compression, other filter definitions, other accounts' filters, the audit log file itself.
+Still not tested after Step 8 (the items tested in Steps 5 to 8 are F45 to F53 and F58 onward):
+
 - Encryption.
 - MySQL REST Service.
+- Audit log rotation, pruning, compression and encryption.
+- Persistence across a server restart.
 - A real LLM run (the agent is scripted).
-- Whether `ALTER TABLE ... MODIFY COLUMN` without a `MASKING POLICY` clause strips masking for an account holding ALTER.
-- Enumeration of customers through an allowed Firewall shape.
-- Firewall DETECTING mode.
-- Other clients' session statements under the Firewall.
-- Aggregates and subqueries beyond F21 to F26.
+- The audit log file in the Data folder (access was denied in Step 6; not checked unless the author supplies it).
+- Masking-policy changes while the Firewall is PROTECTING.
 
 ## 8. Review of unexpected-query evidence
 
@@ -505,7 +505,7 @@ Added after earlier sections; earlier entries unchanged. All captured unless sta
 - **F73.** (captured) Teardown ran in this order without errors: group RESET, delist, remove; FIREWALL_ADMIN revoked; Audit user assignment and filter removed (both OK); Firewall uninstall script on `ddv_sec`; `RESET PERSIST component_firewall.database`; Audit uninstall script on `mysql`; `DROP SCHEMA ddv_sec`. Only root and the event scheduler were connected before it. root's grants no longer list FIREWALL_ADMIN. (73-precheck.txt, 73-fw-group-teardown.txt, 73-audit-remove.txt, 73-fw-uninstall.txt, 73-reset-persist.txt, 73-audit-uninstall.txt, 73-drop-schema.txt, 73-grants-check.txt)
 - **F74.** (captured) The after snapshot equals the baseline except for the processlist row of the capturing session (connection id and port). (70-baseline.txt, 73-after.txt, 73-compare.txt)
 - **F75.** (captured) The raw Audit JSON held a local path, the machine name and the OS user name; it is not in the repo. The extract scan found 0 forbidden terms, 0 passwords and 0 paths. No statement containing a password was run while Audit was loaded. (72-stack-audit-extract.txt)
-- **F76.** (not tested, remaining) Firewall DETECTING mode; enumeration of customers through an allowed Firewall shape; other accounts in the Firewall group or Audit filter; ddv_billing under the Firewall beyond the single COUNT(*) in F50; password-bearing statements in the Audit log; the audit log file in the Data folder; Audit rotation, pruning, encryption and compression; persistence across a server restart; a real LLM run; masking-policy changes while the Firewall is PROTECTING; `ALTER TABLE ... MODIFY COLUMN` without a `MASKING POLICY` clause for an account holding ALTER; aggregates and subqueries beyond F21 to F26.
+- **F76.** (not tested, remaining after Step 8; the earlier list was shortened because F77 onward test the rest) Encryption; MySQL REST Service; Audit rotation, pruning, compression and encryption; persistence across a server restart; a real LLM run; the audit log file in the Data folder (access denied in Step 6, not checked); masking-policy changes while the Firewall is PROTECTING.
 
 ## 24. Evidence index additions (Step 7)
 
@@ -577,3 +577,195 @@ Files in sql/, agent/ and evidence/ not listed in earlier index sections. Step =
 | sql/73-fw-group-teardown.sql | Step 7 | f41121a7293b208ada1ced5a4f9ad35ec0fa01720bd390c6187d177c0b660342 |
 | sql/73-grants-check.sql | Step 7 | 10db481151c0ed792631c9a479cf5c751b98aae186bf7ed50b6b6271f44ab119 |
 | sql/73-precheck.sql | Step 7 | c9fd76a0b9242d6aacbddf2bb86ece8daffeebb6ae8ec58d82a019a4b09cf3d3 |
+
+## 25. Step 8 findings (F77 onward)
+
+Added after earlier sections; earlier entries unchanged except F76 and section 7, which now list only what is still not tested. All captured unless stated. Files are in evidence/ (80-* to 84-*).
+
+- **F77.** (captured) `ddv_alterer` held only SELECT, INSERT, UPDATE and ALTER on `ddv_probe4.probe_alter` (no roles, no MANAGE_DATA_MASKING_POLICY). `ALTER TABLE probe_alter MODIFY COLUMN phone VARCHAR(20)` (no MASKING POLICY clause) succeeded; SHOW CREATE TABLE then showed `phone` without the policy and SELECT returned the real phone values. The manual says omitting the clause removes the policy (`.local` notes, manual-documented). (80-a-setup-root.txt, 80-a1-stmt.txt, 80-a1-after.txt)
+- **F78.** (captured) After root re-attached the policy (80-a2-root-reattach.txt), `ddv_alterer` ran `ALTER TABLE probe_alter MODIFY COLUMN phone VARCHAR(20) MASKING POLICY probe4_mask_phone` without error and without MANAGE_DATA_MASKING_POLICY; SHOW CREATE TABLE showed the policy and SELECT returned masked phones. (80-a3-stmt.txt, 80-a3-after.txt)
+- **F79.** (captured) With the policy attached, `ddv_alterer` added `phone_copy` (no policy), ran `UPDATE probe_alter SET phone_copy = phone` (3 rows) and SELECT returned masked text in both columns. (80-a4a-stmt.txt, 80-a4b-stmt.txt, 80-a4c-stmt.txt, 80-a4-after.txt)
+- **F80.** (captured) `ALTER TABLE probe_alter CHANGE COLUMN phone phone2 VARCHAR(20)` by `ddv_alterer` succeeded; `phone2` showed no policy and SELECT returned real values. Root restored the table after steps 4 and 5. (80-a5-stmt.txt, 80-a5-after.txt, 80-a4-root-restore.txt, 80-a5-root-restore.txt)
+- **F81.** (captured) On three rows, `COUNT(DISTINCT email)` and `COUNT(DISTINCT phone)` were 2 and 2 for `ddv_agent` and 3 and 3 for `ddv_billing`. `GROUP BY phone` gave 2 groups (1,2 and 3) for the agent and 3 for billing, each with 1 warning. `WHERE phone IN (SELECT phone ... WHERE id = 1)` returned ids 1,2 for the agent and id 1 for billing. (81-agent-01.txt to 81-billing-03.txt)
+- **F82.** (captured) For the agent, `SUBSTRING(email,1,6)` returned `m*****`, `SUBSTRING_INDEX(email,'@',1)` returned `m********`, `MIN`/`MAX(phone)` returned `****0101` and `****0303`, the `UNION` of email and phone returned 4 rows (billing 6), a CTE `ORDER BY email` returned ids 3,1,2 (billing 3,2,1), `ROW_NUMBER() OVER (ORDER BY email)` gave 2,3,1 (billing 3,2,1), and `HEX(email)` showed the masked bytes. (81-agent-04.txt to 81-billing-08.txt, 81-agent-11.txt, 81-billing-11.txt)
+- **F83.** (captured) `email REGEXP '^mark\\.z'` and `email = 'mark.zzzz@example.test'` returned an empty set for the agent and id 1 for billing. `email BETWEEN 'm' AND 'n'` returned ids 1,2 for both users. (81-agent-09.txt, 81-billing-09.txt, 81-agent-12.txt, 81-billing-12.txt, 81-agent-10.txt, 81-billing-10.txt)
+- **F84.** (captured) In PROTECTING mode the recorded `find_customer` shape ran for `ddv_agent` with `'Bilal Sample'` and `'Chen Demo'` (one row each, masked) and `'Nobody Here'` (empty set); each run raised the denied and granted counters by 1. (82-shape-bilal.txt, 82-shape-chen.txt, 82-shape-nobody.txt and their -status-before/-after files)
+- **F85.** (captured) `... WHERE full_name = 'x' OR '1'='1'` as `ddv_agent` returned `ERROR 6444 (28000): Access denied.` three times in the file (denied counter 3 to 6, granted unchanged). The same text embedded as one literal (`'x'' OR ''1''=''1'`) ran and returned an empty set (denied +1, granted +1). (82-inject-or.txt, 82-inject-literal.txt and status files)
+- **F86.** (captured) `ddv_billing`, not enlisted in a group, ran `SELECT * FROM ddv_support.customers` and read six rows unmasked; the counters did not change. (82-billing-all.txt and status files)
+- **F87.** (captured) With a second group `fw_norole` for `ddv_norole@%` recording one shape (`SELECT COUNT(*) FROM ddv_support.orders`, plus a recorded rule for the client's own `version_comment` probe), `ddv_norole` ran the recorded shape (result 10); its `find_customer` shape returned `ERROR 6444` twice and `ERROR 2014 (HY000): Commands out of sync` in the same file; `ddv_agent` running the `COUNT(*)` shape returned `ERROR 6444` three times. (82-norole-group.txt, 82-norole-record.txt, 82-norole-protecting.txt, 82-norole-recorded-shape.txt, 82-norole-find-customer.txt, 82-agent-count-orders.txt)
+- **F88.** (captured) With `fw_agent` in DETECTING mode, the five out-of-workflow selects each ran and returned rows; `firewall_access_denied` stayed 12, `firewall_access_granted` rose by 2 per run and `firewall_access_suspicious` rose from 0 to 10. `performance_schema.error_log` returned no firewall rows; `log_error_verbosity` was 2 and `component_firewall.trace` OFF. (82-detecting-start.txt, 82-detect-ow1.txt to 82-detect-ow5.txt, 82-error-log.txt)
+- **F89.** (captured) With filters `agent_log` (ddv_agent@%) and `billing_log` (ddv_billing@%), all calls returned OK and `audit_log.filter_id` was 0 for root, 1 for ddv_agent, 2 for ddv_billing and 0 for ddv_norole. One select each as agent, billing and norole: events for agent and billing are in the log, none for norole. (83-filters.txt, 83-status-root.txt, 83-status-agent.txt, 83-status-billing.txt, 83-status-norole.txt, 83-select-agent.txt, 83-select-billing.txt, 83-select-norole.txt, 83-audit-extract.txt)
+- **F90.** (captured) With filter `root_log` on `root@localhost` (log: true), `CREATE USER`, `ALTER USER` and `SET PASSWORD` with fake sentinel passwords were logged as `IDENTIFIED BY <secret>` / `=<secret>`; the raw JSON held no `SENTINEL-FAKE-PW-0001` to `-0003` and one `SENTINEL-FAKE-PW-0004`, which was inside a `SELECT` literal. The manual does not document this default (`.local` notes). (83-pw-statements.txt, 83-audit-extract.txt)
+- **F91.** (captured) The log of the run held 36 events and `audit_log.events_written` was 36. All filters and assignments were removed (all OK), `ddv_pwtest` was dropped, the Audit uninstall ran with `-D mysql`. The raw JSON held a local path, the machine name and the OS user name and is not in the repo. (83-audit-remove.txt, 83-audit-uninstall.txt, 83-audit-extract.txt)
+- **F92.** (captured) Firewall teardown ran in order (reset, delist, remove both groups; FIREWALL_ADMIN revoked; uninstall script; `RESET PERSIST component_firewall.database`; `DROP SCHEMA ddv_sec`) and cleanup removed `ddv_probe4`, its three policies and `ddv_alterer`. The after snapshot equals the baseline except the processlist row of the capturing session. (82-groups-teardown.txt, 82-fw-uninstall.txt, 82-reset-persist.txt, 82-drop-schema.txt, 84-cleanup.txt, 84-after.txt, 84-compare.txt)
+
+## 26. Evidence index additions (Step 8)
+
+Files in sql/, agent/ and evidence/ not listed in earlier index sections. Step = Step 8.
+
+| File | Step | SHA-256 |
+|---|---|---|
+| agent/support_agent_step8.py | Step 8 | c9e581949c520b45859e43d4835e6a2a11c123472e7ae67c4133feec5ef02b87 |
+| evidence/80-a1-after.txt | Step 8 | 29b23d0f107364424f6b522cf38a5db631e37cf12b2e1041ef6557ee405b467a |
+| evidence/80-a1-stmt.txt | Step 8 | 48a263eb24cf90d73ac9bba9fc799450c88b2ebc5a01a65aca70cc2f22424345 |
+| evidence/80-a2-root-reattach.txt | Step 8 | 2ab461ccc4ad54775183299ed359a76b060f78f3a7c7d7d83b1b0deb832cebb0 |
+| evidence/80-a3-after.txt | Step 8 | 3bf54be0679a675932368b0f357f3dffc5213ae76d662b3a3f7c9fea7fa6c955 |
+| evidence/80-a3-stmt.txt | Step 8 | abb1a730dea355bdfe850da38943d1bd6ef2354d5dd81a3d51d97bab92cc3998 |
+| evidence/80-a4-after.txt | Step 8 | 5a92bc6d03eb2c2193e3f6817be6d4270c27c4495b725afbf22e84ff01949b07 |
+| evidence/80-a4a-stmt.txt | Step 8 | 126bd7a3c465321781eb3609cb8e559965649823d8d62b3fc7878cae328597cd |
+| evidence/80-a4b-stmt.txt | Step 8 | 7b0e946b4745045a5040c26fe27bb0f79b2c379451514126c678e0d49e090d3e |
+| evidence/80-a4c-stmt.txt | Step 8 | 1b26aea371a3aa2f4d7ba17b97c492cd5c82f9dc5562b47f52fff659db4da1b6 |
+| evidence/80-a4-root-restore.txt | Step 8 | 59ae220c8b90bb5157aea80d0ca127ca0b74b300196f28f7b21d5c89fcd177ea |
+| evidence/80-a5-after.txt | Step 8 | 13e8992e26060a94ad91e483f3b46eedcd1db1069319dbd11a9df33ff647e524 |
+| evidence/80-a5-root-restore.txt | Step 8 | be9a42aa98c24685494670f4e6d0d0a92d97b37f03f810c68a2b0c90a4844619 |
+| evidence/80-a5-stmt.txt | Step 8 | 642cda8746b44eae1f0094428e635733b5d9b319f65de5364e4c9f50a69ca822 |
+| evidence/80-a-setup-root.txt | Step 8 | 500147a19085b1c57eb240c2a198ca885472e9097b01ba3fee9b56b3ef0bcf6c |
+| evidence/80-baseline.txt | Step 8 | 29523be2378cc2acc386d0fe67e3fb916fce7d2b8de066a3abbafb81ca3efa08 |
+| evidence/81-agent-01.txt | Step 8 | 5ad6ec5128a3eb8436b514e7d25f6d02d96cd551fcd8033311753b9e70e3b886 |
+| evidence/81-agent-02.txt | Step 8 | 4c8cc9fd67cffc129e84ca9ffc96441dd61b79328e8922c5d4118decfd734c91 |
+| evidence/81-agent-03.txt | Step 8 | ff2b95ab33417266179bf4c2fe1a2204fa6ef370d3b0d99f53169d2bb7eaf203 |
+| evidence/81-agent-04.txt | Step 8 | e1b74cf59eda80d2388be6f28e83b58acfcb0bee74cedba096b6fa9cbe2fc502 |
+| evidence/81-agent-05.txt | Step 8 | 363b8dec5f8dc6a770663aedc26ebaa7982f6c42b144f54877033f933e2c92ff |
+| evidence/81-agent-06.txt | Step 8 | 48a387a88d266cbbc3467d3ae7da75badc2f22037cb8bc7399616835e50f13dc |
+| evidence/81-agent-07.txt | Step 8 | f593bd836aa5896b81198c66a40d2715cccbae08d30fa774d1c3735c865cf7cc |
+| evidence/81-agent-08.txt | Step 8 | 64681f3476a2e7d403f39517f2a295669444029e37bbc23cc23a0c4343c4c167 |
+| evidence/81-agent-09.txt | Step 8 | 5c33da2653e516a9abb472ac45df2bdde82b7f574f251c43aaafdbc2bc7f380e |
+| evidence/81-agent-10.txt | Step 8 | f3309b44aa2ead97d8d6a5e3595fa3cbfbb15c5a71d765b7aa304ddc100e0fdc |
+| evidence/81-agent-11.txt | Step 8 | e0c180edce162bc910171f8a2cd014c3366126fbe2511edc0822dfdf83f4df58 |
+| evidence/81-agent-12.txt | Step 8 | d9cbb10328b5b29f90f6c3585c342e7073ddb0b809a8db8fbda0665967162e5a |
+| evidence/81-billing-01.txt | Step 8 | 5e13726ce075e2b56c89da2f4c3a30734e1a73bf5190d06b7d80eaf6da459e96 |
+| evidence/81-billing-02.txt | Step 8 | 043a977280b0ec4ffe356fe3066a36f41aae62cc77d4462840feddb5ceb54221 |
+| evidence/81-billing-03.txt | Step 8 | 1451aec95089d6865e3b5b972fda8d74bc508b79b7cb1792e3bd5fb1026f07e6 |
+| evidence/81-billing-04.txt | Step 8 | 2d81398d60f1503d55ec936280d49e5075b19e5444dc59db9bd2ec5078c5500b |
+| evidence/81-billing-05.txt | Step 8 | 4b18e8db09e5e2fa329c4460223648fcbb581c7195b7a29539c3888e44ed5c96 |
+| evidence/81-billing-06.txt | Step 8 | 0dbb3729ca67f0157f45a9d1d00092a74664876410554918dc8d6e5b0f09d305 |
+| evidence/81-billing-07.txt | Step 8 | 7282be9e52638af848270d4e31a60958a624c189aefdcc83fabc7651c52651f8 |
+| evidence/81-billing-08.txt | Step 8 | b8cca7a4d8f67b20435f2f1b01a8ae7e0cb766ab8b64bb9aa0a433ad68a140f9 |
+| evidence/81-billing-09.txt | Step 8 | 8e2a7d9c745fba224ccecb2ed7122c14850e719c66bd6ec99e8e2366c35c6144 |
+| evidence/81-billing-10.txt | Step 8 | 802445ad5314ec32a8d91d2bc207d7ad8b32e046656a31981b2bef989dfaea55 |
+| evidence/81-billing-11.txt | Step 8 | 66ae024e090a58a3e881496181d83922e0361b2a41290aed543268950f72b7f2 |
+| evidence/81-billing-12.txt | Step 8 | 24e451f4b93ad97ba0609f677243f448056af81f4d0ce740e15af5e70d68d727 |
+| evidence/81-setup-root.txt | Step 8 | eeaf769063aa75b73e5180dde05ba7d5d5b1c87b78af36da2beca2b2ecbaedb4 |
+| evidence/82-agent-count-orders.txt | Step 8 | 9fad83853505e7a61a378ceb8e99e1ad4ff1c8f8b63e4dc054e309946c68c9db |
+| evidence/82-agent-count-orders-status-after.txt | Step 8 | a6b2d19f7cba4f6cd332ceddbd96f30dc7664ef1b6fd1b3d93a05ba0df571611 |
+| evidence/82-agent-count-orders-status-before.txt | Step 8 | 0db34490d2398cd594a9e9aba0d7bc714aed343c17c1505e5ee7519c4edf8da0 |
+| evidence/82-billing-all.txt | Step 8 | ce343e4d4aa25e6c09d68b1f2e2724dfaf45519c49248b2c5dac8f18e9aed252 |
+| evidence/82-billing-all-status-after.txt | Step 8 | b708c7aa1ef24fe86f81c80fd4fbbe1f3b7b65c64add4e7923c48a3dbfc284a1 |
+| evidence/82-billing-all-status-before.txt | Step 8 | 9585496cc929778e939af590008baa0df8f2541622d780bf501a64332c11d42d |
+| evidence/82-ctx.txt | Step 8 | faf56289389eb4c2300ccadcf3ae7917981f2449185f672266e18689f3c4c671 |
+| evidence/82-detecting-start.txt | Step 8 | 13e2711a1f2d8b2a394024029f8a7b318aa31200e7ca9270564bcba6da5fa232 |
+| evidence/82-detect-ow1.txt | Step 8 | 98b239b8b7c3ca4f37bfa0b65c12ca6bf1412a5e027593dea5174016a3994f81 |
+| evidence/82-detect-ow1-status-after.txt | Step 8 | 8d7ad7558b7802f08a70de70033618eb753e533cdc075505cd0ac8397f8fe623 |
+| evidence/82-detect-ow1-status-before.txt | Step 8 | a6b2d19f7cba4f6cd332ceddbd96f30dc7664ef1b6fd1b3d93a05ba0df571611 |
+| evidence/82-detect-ow2.txt | Step 8 | 3c2094d420245204a47e5d58fb069e419c34e03f7e0d004c2d4a7cfc094446c5 |
+| evidence/82-detect-ow2-status-after.txt | Step 8 | 52e056e94ce4aac7b6af04351e239cdb0d86a6ffc0e5808d472f66a1f12c6f3a |
+| evidence/82-detect-ow2-status-before.txt | Step 8 | 6bba7ad2f7b0959fb4aeb7d67336f7ca24f8210ab43f10d27ea2851904609c63 |
+| evidence/82-detect-ow3.txt | Step 8 | 77036010b34a6804ff797700aebdc55ca1608f0a7802e13896ba18b33a64d2e5 |
+| evidence/82-detect-ow3-status-after.txt | Step 8 | 6b9609e659dc7e43501b99d50ba6b0c4c98a57f02f16e2cc5c2d903dec51b3ac |
+| evidence/82-detect-ow3-status-before.txt | Step 8 | a2a5daf50eda80dead09b4ccaeb82fcee801d4b9168815d85ae50a590321ae24 |
+| evidence/82-detect-ow4.txt | Step 8 | 32a97dd0ccc3a2174a9432c36edcdcb327952e67a74c1647e0d3e7006bfd2728 |
+| evidence/82-detect-ow4-status-after.txt | Step 8 | fb3b51db87f79aa573d0b37af67d5625c4bee66df80e8bc0654d2d3c5e03f2c9 |
+| evidence/82-detect-ow4-status-before.txt | Step 8 | ff03a0e7db29dae49c96309f997462703990c51da2e21f293d73ed6484846d5f |
+| evidence/82-detect-ow5.txt | Step 8 | 915b8ed59db28b34dbe9d0ee003c874541c1a6a1714b684176ee1b53d3f71e91 |
+| evidence/82-detect-ow5-status-after.txt | Step 8 | 30d81c9eb7da4546add56e0d6d6c7520090567bc09ef4cd3633f08d352f6e9ff |
+| evidence/82-detect-ow5-status-before.txt | Step 8 | 491245868f52fe3b2916fc98e05e719fe0a7226fdc9b128a9d242be890fae722 |
+| evidence/82-drop-schema.txt | Step 8 | 6061f3b27b52d5180209e6dab8e4854b22f3edec873e4cffb124e427dd2bc385 |
+| evidence/82-error-log.txt | Step 8 | a495909f56dd2a7df03ed8c2a5b48439a70e53ca4015ba8c401f8d0537f74951 |
+| evidence/82-fw-allowlist.txt | Step 8 | 72ee788ce4e43302a365984e7cb7c153649e0d608cff6fdbffbffa5320199687 |
+| evidence/82-fw-enlist.txt | Step 8 | 570c3f2639340093175e3a94ae1be5bc964daacc693b0622720c5c6770872b6c |
+| evidence/82-fw-install.txt | Step 8 | 1db40a66bfba67447e6318aba29069f9c066211bc5d8fa03691fd917697b93bd |
+| evidence/82-fw-protecting-start.txt | Step 8 | 35b0197f4432dcf27f9069e8edad82a45605134eccf043870f28ff2f4532766a |
+| evidence/82-fw-recording.txt | Step 8 | 80cc4facb360456b4cd26b2c744e02d3ec04d6486fdb8c685cce58e421408593 |
+| evidence/82-fw-state.txt | Step 8 | 0522fcbb1ac31acd32d80e84ee4112a3d36fcfd3c9bab504b01c55e56b8a90be |
+| evidence/82-fw-uninstall.txt | Step 8 | c2c25c06c8ae5a06bcf8ec34fe93c9ba734bcc435a767f9e3ebae9c35ab973df |
+| evidence/82-groups-teardown.txt | Step 8 | 503a2586b60c0def99e8e9224f2d97e08eda5bdc1f3457388d682aa3700a9c87 |
+| evidence/82-inject-literal.txt | Step 8 | dd71e7a8dd26d9b94bcefb9a3767054ee3768b06f0887538f6d3b5326532a003 |
+| evidence/82-inject-literal-status-after.txt | Step 8 | 7c181b8d1aa05a096d5876dae9d54dd9be4f8bdbb7147a4e9ea2085e3a0fb213 |
+| evidence/82-inject-literal-status-before.txt | Step 8 | c494e2c37142f970e9e06ed411b0965d87763e9eaaea9f21389766c069cf814b |
+| evidence/82-inject-or.txt | Step 8 | 71db7ecb5c31f06f90f95f72b5d808dd3c16ef41506c556e545ba036f4fe6371 |
+| evidence/82-inject-or-status-after.txt | Step 8 | 61e6c647de26770fb279d5d9b6c28d80da692f994454d5ceb88bd3aeb3ea8b46 |
+| evidence/82-inject-or-status-before.txt | Step 8 | b4be03feab0dd663d77c16da381d0b270484758018324a95885af1115157aad3 |
+| evidence/82-norole-find-customer.txt | Step 8 | 42a52fda10b507bd483e1cf02d45cfdc526fa40406f1ef4599cd989d8fc13726 |
+| evidence/82-norole-find-customer-status-after.txt | Step 8 | 0db0782c150571cae48c20951a31411d6041b7ac312540d1be43f49b3c089df7 |
+| evidence/82-norole-find-customer-status-before.txt | Step 8 | 720003803a3bf98c24ab580a07e5555f3a6892d9d069cc25ba2e7ff95c409b14 |
+| evidence/82-norole-group.txt | Step 8 | 72d93100504d0d66c52e218d74c18d10e40603e55a5237d3fbbb05092e166985 |
+| evidence/82-norole-protecting.txt | Step 8 | b114803b034f85a8bc55de803492d78090507dffea9e139e6fcb8a9fd5bf0457 |
+| evidence/82-norole-record.txt | Step 8 | 4a5f17149cbe37dbe2fdffa8ccc2e134bfd1e798be314b95a89ab7e44b5412a6 |
+| evidence/82-norole-recorded-shape.txt | Step 8 | c2214a697ef13e9e14d729184834e2e361d05fd2de3db7b3eb57f3b8c65d1ae1 |
+| evidence/82-norole-recorded-shape-status-after.txt | Step 8 | 808e50555f1416639c35ce209a2c43057a493cc61a6d070431fd68e8e4d9a84f |
+| evidence/82-norole-recorded-shape-status-before.txt | Step 8 | f89ae3049ac490a87065b54ff5743251838990f7dbb6f8b3bf3cf054de369b06 |
+| evidence/82-recording-run.txt | Step 8 | 3f9e7ff92cf4ec884a04d728bbe13db34f6bd025c010fa85b74e04098b847a55 |
+| evidence/82-reset-persist.txt | Step 8 | c71f897ec522cf1a728e15b71e6de1d281c534cd4406e774b6bced7983be8143 |
+| evidence/82-schema-create.txt | Step 8 | e07a2ba68f9e3c919d9d775385c45a0be8b84fc66c5eeb4a1825c014ea73982a |
+| evidence/82-shape-bilal.txt | Step 8 | 05e0685bf24944ba5afab971c90529d92610aad7943514cab756d6049836defc |
+| evidence/82-shape-bilal-status-after.txt | Step 8 | a1ea4f191b3bf47d0134fd7a6b945b1101e5e7d1cc3ab9a4476e3dc4f1358fb8 |
+| evidence/82-shape-bilal-status-before.txt | Step 8 | 0153005fc944b23d3912d045ef82c7e4c2322eb7e20850cb935faa674574c893 |
+| evidence/82-shape-chen.txt | Step 8 | 117f5a4817f6f827a3e2ef5ca74f7fbb166df0e8f45ce83ffeeec189534a2daa |
+| evidence/82-shape-chen-status-after.txt | Step 8 | fe9828b5c1aac59a721a86a429e7dbe9d36527189d06dcab30bbb34ed501d9d4 |
+| evidence/82-shape-chen-status-before.txt | Step 8 | 118ce3a57d4c26335c3de2fb21c6aaff91760c7d68af44e322cb391ee379b0ab |
+| evidence/82-shape-nobody.txt | Step 8 | 81275e3d89dae2e3d8af515eb7a91ccf7befbc93377d8cdcb0e11ea5168577d5 |
+| evidence/82-shape-nobody-status-after.txt | Step 8 | 028b6619524dec32fd6e02b87cc89598f98c097a23b2780a268580146f3f1011 |
+| evidence/82-shape-nobody-status-before.txt | Step 8 | 9409bc767fc8a46fd90df7657218e7277cf693c488f29d48c8c3455c611d13ed |
+| evidence/82-teardown-precheck.txt | Step 8 | 6e82c7fad5db4c4c022985d5f62da2977f90f4eec7607032c7e382f4a17cada1 |
+| evidence/83-audit-extract.txt | Step 8 | e0bde58312f8fdf4942fc4e529fe9d0ff7a489eaa57c0d8d57db319108b76c86 |
+| evidence/83-audit-install.txt | Step 8 | 47c9be8142ed7b42f5724966f539bbfc1b1a495f4d01bab9907804f0f7c3be44 |
+| evidence/83-audit-remove.txt | Step 8 | 3529362b1e98e850449f3c2bac3e29297ba7d173f07cdcf31997f50841462deb |
+| evidence/83-audit-uninstall.txt | Step 8 | e1bfa79dead741ffdf55ea7070b446b54c94f8e8941e11a73317a3e38322ab05 |
+| evidence/83-filters.txt | Step 8 | 9555639073f8626bd9aa8107902156f5d85f04ec89fe718ec73d29be3f873ef0 |
+| evidence/83-pw-statements.txt | Step 8 | a2d8cd86a9594063dd6e4d1888361ed94e4ad3c680e0548264d547adb7e5e8af |
+| evidence/83-root-filter.txt | Step 8 | 585994c7e5129c0546e93c422f173acee3d39ad0c82b976594086e80ee61f52e |
+| evidence/83-root-unassign.txt | Step 8 | a10b64732731d6a573b0726160826118ed8b3259aef05238610108d2dd896317 |
+| evidence/83-select-agent.txt | Step 8 | afe2e457116022d9b4ebb25d50db5895316645f1d980e82a91a6a6a9446d6740 |
+| evidence/83-select-billing.txt | Step 8 | 42036841693c9a6dfbbaf85bbdc360e2b47ad0bfacc5ed416d84e8806d442370 |
+| evidence/83-select-norole.txt | Step 8 | a939d9b31581c2bf3ea40c565ae24e70db32eec290d01d3044324e30cac47d39 |
+| evidence/83-status-agent.txt | Step 8 | 00ad030c8948c22e70eb38e1a1311d4071240777a66e20dc2e28e6fe69933256 |
+| evidence/83-status-billing.txt | Step 8 | 2329f8cd8214a015d5de561ce565a217911080c340cec6b2151957d5fc75db05 |
+| evidence/83-status-norole.txt | Step 8 | 1b54c7f1219c8b84089e7c602561cfcf9ff3a6cd365c28ceeb00a16917e47d6e |
+| evidence/83-status-root.txt | Step 8 | c2cfc0d1a8cc464b2b0a3d1bd518210d6e3075dfa079557384ffedf5f5d1739e |
+| evidence/84-after.txt | Step 8 | c791417a6c024ee92a42c328df12331363fb776ba4411b110e08f2a510504d11 |
+| evidence/84-cleanup.txt | Step 8 | 25871ed4af64026f2f5fe4ef833c74c8069c3a39d805ac996539211b9cb0dc64 |
+| evidence/84-compare.txt | Step 8 | d099cfc6153c6e41b70db75d01c2d8b6134019bb7bb4aa5451337d6b1627631a |
+| evidence/REPORT-11.md | Step 8 | 7393750593c725b700be71d18dc1a5cd846214e48bd3bb5dbff09f47b5e2d33d |
+| sql/80-a1-stmt.sql | Step 8 | 31b6a992a61c99d3012602351508bfe67c79a2a3186b859a7dec433750dc785c |
+| sql/80-a2-root-reattach.sql | Step 8 | c94cc4a48b5c035fd4e3ad8f412d924da0fc56a5b01f990151738fd799fb6dae |
+| sql/80-a3-stmt.sql | Step 8 | c7b890dc61c06d503e4665f8080c2f5e924776bca7f855f3ee41177aa0f2272d |
+| sql/80-a4a-stmt.sql | Step 8 | 30e2ab2c05c7c9d2c802052865e6cc842ebab348a71fb47f229dbb3b77fa44f0 |
+| sql/80-a4b-stmt.sql | Step 8 | dacc45d44cf270a185b3eeb453dd13bd578aaf8dcecccea2744b7dfdb98fca3a |
+| sql/80-a4c-stmt.sql | Step 8 | 607e457d491c1ff02f0736f9ca3a1f985e0b6c5b90bd83f873db1e9377020f6b |
+| sql/80-a4-root-restore.sql | Step 8 | 31e701414e85e8c9bdb45fad0969ded45e0a968c3635b58d021d3c084d249f68 |
+| sql/80-a5-root-restore.sql | Step 8 | d663f1798038ca814c3f30aec62e99d0f158bb8509731b421b9ff25202e8366a |
+| sql/80-a5-stmt.sql | Step 8 | 6902c71a7571ea3a2f09dc440e330eb939c087c16fa5d5add856ad969b3afc84 |
+| sql/80-a-after.sql | Step 8 | 1ca4864f0b0087bbf3cb30fb57c9e9b8de4d11a1690de7b404b71797bd3408db |
+| sql/80-a-setup.sql | Step 8 | cbdd7d5bee95b6a5e018471cdf91809f6517a45b50ed306464b8cd4f70629d13 |
+| sql/81-01.sql | Step 8 | 3d2eb328054a837299d04a348fabebb47795ac93c786fabd0f04ab1d1382c667 |
+| sql/81-02.sql | Step 8 | fc65de1cb5ab49ae416a13beded4965bfbb4881bf44663b176de62c42a39667b |
+| sql/81-03.sql | Step 8 | 11da32ecfbaf64b9b4c3ea025f3a0c4ed008f65c5b2105632943693abc365f51 |
+| sql/81-04.sql | Step 8 | 3e283ee736d7385c0f338f8ec6ee5fea8bcb5b65be039a049977508985c48f51 |
+| sql/81-05.sql | Step 8 | e958a90ac8b3f0e68e48ed389df851d0e7ec4db76987fdcc383b9352c7bdc0f9 |
+| sql/81-06.sql | Step 8 | 09cf3d3668f1e0bb2ab5714c4822ae263261ec7d88d9d4fb36e13cb452b18932 |
+| sql/81-07.sql | Step 8 | fb6ff375a372c527f42258b3c8088a4e17fc83c63e9e09d7adf3e989e6168b74 |
+| sql/81-08.sql | Step 8 | bcc35250a60223cbb22b3a3d0c465445b7f6fa457a4ed3449ea4332fd8a32435 |
+| sql/81-09.sql | Step 8 | 8b4467bae7c6cfee21ad3dd248ce3ffee6dda450498518ddda2d745b55c4bde0 |
+| sql/81-10.sql | Step 8 | f81c45856ed215e196ef16ec5a7bc5e4d5d7bc179de643d795281141ed5d515b |
+| sql/81-11.sql | Step 8 | 953b62506fe60a9268b046e34aff09426cabd4a48d52c8e5297e33cae21968ad |
+| sql/81-12.sql | Step 8 | 76e353f2eb6930d0660614ce412f8a346a09b910727ddd8a9c16a2eb64e929d5 |
+| sql/81-setup.sql | Step 8 | 8e03724cda5de67a026eaf17206fc4e3d73a758ca9f82cdb2b78369464bfea0b |
+| sql/82-billing-all.sql | Step 8 | 07a020ad02a6c4beaefd30cce44dec18335d4ce2509bd142cb38cbb1a57644b9 |
+| sql/82-detecting-start.sql | Step 8 | ba0696264706e3dfb259109a26e12c5d5b31a7c46ef1d6a810f7e62f0050f85e |
+| sql/82-error-log.sql | Step 8 | 6be11f7af0dceb812aab9c7b7345182d9f0c1046df4b933f22b3d3b413a15786 |
+| sql/82-groups-teardown.sql | Step 8 | c21a4f31829bff85fc1e361be10c2c1f4e43d2382771a6cd3275aa4c91fcee81 |
+| sql/82-inject-literal.sql | Step 8 | da7225af18697402267197cc73fcd8901d0ae725b5c6c470ea92a78e4149a983 |
+| sql/82-inject-or.sql | Step 8 | 73f65587551ba40206c7d9423ac8276df6a26a565802f23b86386a3e3bd2e8ed |
+| sql/82-norole-count.sql | Step 8 | 2b4e4726fdbc82205c4441f76162f6b3cfe7a11014bde93f487540d2e7e2f302 |
+| sql/82-norole-group.sql | Step 8 | eb807fe6b24a6b338c15055cfe5a8504540a263c97d59fd285d806d60481b1e2 |
+| sql/82-norole-protecting.sql | Step 8 | 633ede6ee5d83d4be39a20df381a5182417b2ac47680b0430ef246f2b01403c9 |
+| sql/82-norole-shape.sql | Step 8 | 5ac32a6107230af3c78739fb2daf2449601cec6fa3ac82417ad6c994935011de |
+| sql/82-shape-bilal.sql | Step 8 | 5ac32a6107230af3c78739fb2daf2449601cec6fa3ac82417ad6c994935011de |
+| sql/82-shape-chen.sql | Step 8 | 74962a9276c7fd66455738e058c6a51827d024cdbb7af2f610e4de4e950409b4 |
+| sql/82-shape-nobody.sql | Step 8 | de60e8081d2b44552ec3b03bb350a33a267077a08b15eb2bfc5e2ddf214dd3e1 |
+| sql/83-audit-remove.sql | Step 8 | c496472eee975f2e69419d0186740868d7d548eeabe7bf5c4cac9e410e5dbe32 |
+| sql/83-filters.sql | Step 8 | 5518c53bea01d7e86ecea368af5a00a2f9a91f7bd0045cb9f50a0fc1b0429ae8 |
+| sql/83-pw-statements.sql | Step 8 | 86fde266d765d4816187b8e16265643203d647e642fb4d65a7da6253a04b5c16 |
+| sql/83-root-filter.sql | Step 8 | 972775335c28d877fe4ded6e50bf6e3fa342582df1855d06c998e8f9b14d7f07 |
+| sql/83-root-unassign.sql | Step 8 | 1686b8603979cf6fb67f05aa7f605b432fdbedfc78301a9be5573264b86ddb31 |
+| sql/84-cleanup.sql | Step 8 | acad1ab9021719e43f65e075b2e0d06617691d3692b30b210cffcf6d29a6a036 |

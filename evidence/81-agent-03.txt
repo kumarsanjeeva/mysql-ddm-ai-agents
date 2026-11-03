@@ -1,0 +1,24 @@
+--------------
+SELECT CURRENT_USER(), CURRENT_ROLE()
+--------------
+
++----------------+-----------------------+
+| CURRENT_USER() | CURRENT_ROLE()        |
++----------------+-----------------------+
+| ddv_agent@%    | `r_support_agent`@`%` |
++----------------+-----------------------+
+1 row in set (0.009 sec)
+
+--------------
+SELECT id FROM probe_people WHERE phone IN (SELECT phone FROM probe_people WHERE id = 1) ORDER BY id
+--------------
+
++----+
+| id |
++----+
+|  1 |
+|  2 |
++----+
+2 rows in set (0.034 sec)
+
+Bye

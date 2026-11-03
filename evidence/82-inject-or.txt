@@ -1,0 +1,8 @@
+--------------
+SELECT id, full_name, phone, email, tax_id FROM ddv_support.customers WHERE full_name = 'x' OR '1'='1'
+--------------
+
+ERROR 6444 (28000) at line 1: Access denied.
+ERROR 6444 (28000) at line 1: Access denied.
+ERROR 6444 (28000) at line 1: Access denied.
+Bye

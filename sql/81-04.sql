@@ -1,0 +1,2 @@
+SELECT CURRENT_USER(), CURRENT_ROLE();
+SELECT id, SUBSTRING(email,1,6), SUBSTRING_INDEX(email,'@',1) FROM probe_people ORDER BY id;

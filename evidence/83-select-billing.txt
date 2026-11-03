@@ -1,0 +1,12 @@
+--------------
+SELECT COUNT(*) FROM ddv_support.orders
+--------------
+
++----------+
+| COUNT(*) |
++----------+
+|       10 |
++----------+
+1 row in set (0.017 sec)
+
+Bye

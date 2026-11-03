@@ -1,0 +1,8 @@
+--------------
+ALTER TABLE probe_alter MODIFY COLUMN phone VARCHAR(20)
+--------------
+
+Query OK, 0 rows affected (0.073 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+Bye

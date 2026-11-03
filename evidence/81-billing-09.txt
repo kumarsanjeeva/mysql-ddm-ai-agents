@@ -1,0 +1,23 @@
+--------------
+SELECT CURRENT_USER(), CURRENT_ROLE()
+--------------
+
++----------------+-----------------------+
+| CURRENT_USER() | CURRENT_ROLE()        |
++----------------+-----------------------+
+| ddv_billing@%  | `r_billing_admin`@`%` |
++----------------+-----------------------+
+1 row in set (0.010 sec)
+
+--------------
+SELECT id FROM probe_people WHERE email REGEXP '^mark\\.z'
+--------------
+
++----+
+| id |
++----+
+|  1 |
++----+
+1 row in set (0.146 sec)
+
+Bye

@@ -1,0 +1,8 @@
+--------------
+UPDATE probe_alter SET phone_copy = phone
+--------------
+
+Query OK, 3 rows affected (0.045 sec)
+Rows matched: 3  Changed: 3  Warnings: 0
+
+Bye

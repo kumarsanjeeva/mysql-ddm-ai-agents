@@ -1,0 +1,25 @@
+--------------
+SELECT CURRENT_USER(), CURRENT_ROLE()
+--------------
+
++----------------+-----------------------+
+| CURRENT_USER() | CURRENT_ROLE()        |
++----------------+-----------------------+
+| ddv_billing@%  | `r_billing_admin`@`%` |
++----------------+-----------------------+
+1 row in set (0.007 sec)
+
+--------------
+WITH c AS (SELECT id, email FROM probe_people) SELECT id, email FROM c ORDER BY email
+--------------
+
++----+------------------------+
+| id | email                  |
++----+------------------------+
+|  3 | lena.mmmm@example.test |
+|  2 | mark.aaaa@example.test |
+|  1 | mark.zzzz@example.test |
++----+------------------------+
+3 rows in set (0.016 sec)
+
+Bye

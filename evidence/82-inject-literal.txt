@@ -1,0 +1,7 @@
+--------------
+SELECT id, full_name, phone, email, tax_id FROM ddv_support.customers WHERE full_name = 'x'' OR ''1''=''1'
+--------------
+
+Empty set (0.008 sec)
+
+Bye

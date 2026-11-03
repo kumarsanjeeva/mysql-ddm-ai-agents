@@ -1,0 +1,16 @@
+--------------
+SELECT * FROM ddv_support.support_tickets
+--------------
+
++----+-------------+---------------------------------+---------------------------------------------------------------------------------------------------------------------+
+| id | customer_id | subject                         | notes                                                                                                               |
++----+-------------+---------------------------------+---------------------------------------------------------------------------------------------------------------------+
+|  1 |           1 | Where is my order 102?          | Customer asked for tracking. Shipped 2026-09-20.                                                                    |
+|  2 |           2 | Refund for order 104            | Refund issued to original payment method.                                                                           |
+|  3 |           3 | Charge failed, please call back | Customer typed: my card is 378282246310005 and you can reach me at chen.demo@example.test, please retry the charge. |
+|  4 |           5 | Change delivery address         | Address change requested before shipment.                                                                           |
+|  5 |           6 | Order 110 still pending         | Customer asked why payment is pending; UPI collect request sent.                                                    |
++----+-------------+---------------------------------+---------------------------------------------------------------------------------------------------------------------+
+5 rows in set (0.013 sec)
+
+Bye

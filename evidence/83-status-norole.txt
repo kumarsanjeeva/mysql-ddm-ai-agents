@@ -1,0 +1,23 @@
+--------------
+SHOW STATUS LIKE 'audit_log%'
+--------------
+
++--------------------------------+--------+
+| Variable_name                  | Value  |
++--------------------------------+--------+
+| audit_log.current_size         | 4301   |
+| audit_log.event_max_drop_size  | 0      |
+| audit_log.events               | 84     |
+| audit_log.events_buffered      | 0      |
+| audit_log.events_direct_writes | 0      |
+| audit_log.events_filtered      | 0      |
+| audit_log.events_lost          | 0      |
+| audit_log.events_written       | 11     |
+| audit_log.file_count           | 3      |
+| audit_log.filter_id            | 0      |
+| audit_log.total_size           | 100968 |
+| audit_log.write_waits          | 0      |
++--------------------------------+--------+
+12 rows in set (0.035 sec)
+
+Bye

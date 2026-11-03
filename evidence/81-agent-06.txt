@@ -1,0 +1,26 @@
+--------------
+SELECT CURRENT_USER(), CURRENT_ROLE()
+--------------
+
++----------------+-----------------------+
+| CURRENT_USER() | CURRENT_ROLE()        |
++----------------+-----------------------+
+| ddv_agent@%    | `r_support_agent`@`%` |
++----------------+-----------------------+
+1 row in set (0.006 sec)
+
+--------------
+SELECT email FROM probe_people UNION SELECT phone FROM probe_people
+--------------
+
++------------------------+
+| email                  |
++------------------------+
+| m********@example.test |
+| l********@example.test |
+| ****0101               |
+| ****0303               |
++------------------------+
+4 rows in set (0.021 sec)
+
+Bye

@@ -1,0 +1,24 @@
+--------------
+RESET PERSIST component_firewall.database
+--------------
+
+Query OK, 0 rows affected (0.208 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.006 sec)
+
+--------------
+SELECT * FROM performance_schema.persisted_variables
+--------------
+
++---------------------------------+----------------+
+| VARIABLE_NAME                   | VARIABLE_VALUE |
++---------------------------------+----------------+
+| log_bin_trust_function_creators | ON             |
++---------------------------------+----------------+
+1 row in set (0.010 sec)
+
+Bye

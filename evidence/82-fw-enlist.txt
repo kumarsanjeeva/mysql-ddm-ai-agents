@@ -1,0 +1,35 @@
+--------------
+CALL ddv_sec.sp_firewall_group_enlist('fw_agent', 'ddv_agent@%')
+--------------
+
+Query OK, 0 rows affected (0.063 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.003 sec)
+
+--------------
+SELECT * FROM performance_schema.firewall_groups
+--------------
+
++----------+-----------+-------------+
+| NAME     | MODE      | USERHOST    |
++----------+-----------+-------------+
+| fw_agent | RECORDING | ddv_agent@% |
++----------+-----------+-------------+
+1 row in set (0.004 sec)
+
+--------------
+SELECT * FROM performance_schema.firewall_membership
+--------------
+
++----------+-------------+
+| GROUP_ID | MEMBER_ID   |
++----------+-------------+
+| fw_agent | ddv_agent@% |
++----------+-------------+
+1 row in set (0.003 sec)
+
+Bye

@@ -1,0 +1,24 @@
+--------------
+SELECT CURRENT_USER(), CURRENT_ROLE()
+--------------
+
++----------------+-----------------------+
+| CURRENT_USER() | CURRENT_ROLE()        |
++----------------+-----------------------+
+| ddv_agent@%    | `r_support_agent`@`%` |
++----------------+-----------------------+
+1 row in set (0.008 sec)
+
+--------------
+SELECT id FROM probe_people WHERE email BETWEEN 'm' AND 'n' ORDER BY id
+--------------
+
++----+
+| id |
++----+
+|  1 |
+|  2 |
++----+
+2 rows in set (0.042 sec)
+
+Bye

@@ -1,0 +1,56 @@
+--------------
+CALL ddv_sec.sp_set_firewall_group_mode_and_user('fw_norole', 'RECORDING', 'ddv_norole@%')
+--------------
+
++-------------------------------------------------------+
+| read_firewall_group_allowlist(arg_group_name,FW.rule) |
++-------------------------------------------------------+
+| Rules added: 0, already existed: 0.                   |
++-------------------------------------------------------+
+1 row in set (0.015 sec)
+
+Query OK, 0 rows affected (0.059 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.002 sec)
+
+--------------
+CALL ddv_sec.sp_firewall_group_enlist('fw_norole', 'ddv_norole@%')
+--------------
+
+Query OK, 0 rows affected (0.038 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.006 sec)
+
+--------------
+SELECT * FROM performance_schema.firewall_groups
+--------------
+
++-----------+------------+--------------+
+| NAME      | MODE       | USERHOST     |
++-----------+------------+--------------+
+| fw_agent  | PROTECTING | ddv_agent@%  |
+| fw_norole | RECORDING  | ddv_norole@% |
++-----------+------------+--------------+
+2 rows in set (0.009 sec)
+
+--------------
+SELECT * FROM performance_schema.firewall_membership
+--------------
+
++-----------+--------------+
+| GROUP_ID  | MEMBER_ID    |
++-----------+--------------+
+| fw_agent  | ddv_agent@%  |
+| fw_norole | ddv_norole@% |
++-----------+--------------+
+2 rows in set (0.007 sec)
+
+Bye
