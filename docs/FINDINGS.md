@@ -84,12 +84,12 @@ All are captured tests unless stated.
 - (c) The Step 1 and 2 files were first committed with CRLF converted to LF because core.autocrlf=true and .gitattributes did not exist yet. Commit 3054d77 re-stored them as captured. A fresh clone verifies all three reports (10, 33 and 47 hashes, 0 mismatches).
 - (d) FIREWALL_ADMIN was granted to root@localhost for the Firewall test and revoked afterwards. (F46; 53-firewall-uninstall.txt)
 - (e) The Audit install script was run against `ddv_sec`, while the manual's example uses `-D mysql`, so the Audit failure (F54 to F56) may come from that choice.
-- (f) CREATE TABLE printed warnings during the Audit attempt (1 and 2) that were not captured. (not captured)
+- (f) CREATE TABLE printed warnings during the Audit attempt (1 and 2) that were not captured. (not captured; the Step 6 install against `mysql` printed the same warnings, code 1287, see F58)
 - (g) The Firewall install script's `CREATE TABLE IF NOT EXISTS firewall_group_allowlist` also printed "2 warnings" whose text was not captured. (53-firewall-install.txt)
 
 ## 7. Not tested
 
-- MySQL Enterprise Audit: the install failed (F54 to F57), so no filter, no logging and no log read-back.
+- MySQL Enterprise Audit: the Step 5 install into `ddv_sec` failed (F54 to F57); the Step 6 install into `mysql` worked (F58 to F65). Still not tested: statements containing passwords, log rotation, pruning, encryption, compression, other filter definitions, other accounts' filters, the audit log file itself.
 - Encryption.
 - MySQL REST Service.
 - A real LLM run (the agent is scripted).
@@ -428,3 +428,63 @@ Inferences from the captured findings named in each bullet. Not tested beyond th
 - In-workflow shapes still return free text. (F8; question 3 in 53-firewall-protecting.txt)
 - Client session statements must be recorded. (F48)
 - A persisted setting remained after uninstall. (F51)
+
+## 21. Step 6 Audit findings (F58 onward)
+
+Added after earlier sections; earlier entries unchanged. All captured unless stated. Files are in evidence/ (60-* to 63-*). This follows the F54 to F57 failure and uses the documented route (`-D mysql`).
+
+- **F58.** (captured) `audit_log_component_filter_install.sql` run with `-D mysql` succeeded: no ERROR lines, `mysql.component` listed `file://component_audit_log`, tables `audit_log_filter` and `audit_log_user` existed in `mysql`, and 10 `audit_log*` functions were registered. `audit_log.database` was `mysql`, `audit_log.filter_recovery_mode` was `LOG_ALL_IF_INVALID_FILTER_DETECTED`, and persisted variables were unchanged. The two CREATE TABLE statements printed warnings (1 and 2), all code 1287 (BINARY as attribute of a type is deprecated), now captured. In Step 5 the same script against `ddv_sec` failed (F54). That the schema choice caused the earlier failure is reasoning. (60-audit-install.txt, 60-audit-state.txt)
+- **F59.** (captured) `audit_log_filter_set_filter('agent_log', '{ "filter": { "log": true } }')` and `audit_log_filter_set_user('ddv_agent@%', 'agent_log')` both returned OK. `SHOW STATUS LIKE 'audit_log%'` gave `audit_log.filter_id` 1 for ddv_agent and 0 for root and ddv_billing. (60-audit-filter.txt, 60-status-root.txt, 60-status-agent.txt, 60-status-billing.txt)
+- **F60.** (captured) The first `audit_log_read` call, started at the first event, returned 89 events (32634 bytes; `audit_log.read_buffer_size` is 32768, so truncation by the buffer is reasoning). Paging with `{"timestamp", "id", "max_array_length": 40}` returned 98 events followed by a null marker; the start event is returned again, so pages overlap by one. `audit_log.events_written` was 98 afterwards. Both extracts are kept. (62-audit-read.txt, 62-audit-read-complete.txt, 63-audit-remove.txt)
+- **F61.** (captured) The 98 events were one server startup event (root) and 97 events from ddv_agent: 11 connects, 11 disconnects, 19 table_access reads and the rest general/status. Root and ddv_billing sessions that ran while the filter was assigned to ddv_agent are not in the log. (62-audit-read-complete.txt)
+- **F62.** (captured) Denied statements were logged with their error codes: ALTER TABLE 1142, DROP MASKING POLICY 1227, CREATE TABLE ... AS SELECT 1142, CREATE VIEW 1142; they have a general/status event and no table_access event. The five out-of-workflow selects were logged as allowed (status 0), with statement text including literals such as the customer name and the LIKE pattern. Query results are not in the log. (61-outofworkflow-1.txt to 61-tampering-4.txt, 62-audit-read-complete.txt)
+- **F63.** (captured) The raw `audit_log_read` JSON held a local path, the machine name and the OS user name (scan counts 1, 1 and 10), so the repo keeps only an extract. The extract scan found 0 forbidden terms, 0 passwords and 0 paths. (62-audit-read-complete.txt)
+- **F64.** (captured) `audit_log_filter_remove_user` and `audit_log_filter_remove_filter` returned OK and both filter tables were empty. The uninstall script, run with `-D mysql` while the only connections were root and the event scheduler, ended without ERROR lines; the after snapshot equals the baseline. (63-audit-remove.txt, 63-audit-uninstall.txt, 63-after.txt, 63-compare.txt)
+- **F65.** (not checked) The audit log file in the Data folder: access to the folder was denied, so names and sizes were not checked. (not tested) Statements containing passwords were deliberately not run while the component was loaded, so whether such text is masked in the log is not tested.
+
+## 22. Evidence index additions (Step 6 Audit)
+
+Files in sql/, agent/ and evidence/ not listed in earlier index sections. Step = Step 6 Audit.
+
+| File | Step | SHA-256 |
+|---|---|---|
+| agent/support_agent_audit.py | Step 6 Audit | 047409996fd282b1bbeb372b1bd117f69d99dea38ebecdb62f5504be31d7a59b |
+| evidence/60-audit-filter.txt | Step 6 Audit | 27289edeeb32d8c23c406aec7628b63c6fdb5a353c7ddba2822a662f2e81e57f |
+| evidence/60-audit-install.txt | Step 6 Audit | 57271be0c7bb7260bfa1001abbb7a92b004144b7205678ca923e3cb5d1d7550c |
+| evidence/60-audit-state.txt | Step 6 Audit | ec1a8d4b162ca6ca2ca3a49369645e61341131d6e6991b5ba8ba9d3a750dee07 |
+| evidence/60-baseline.txt | Step 6 Audit | 2f707d43a6a80607c6e673e660e5566e3f47380e3021027511b5c5d0e44ad0e7 |
+| evidence/60-status-agent.txt | Step 6 Audit | a3cb5f5a5724b30c00dd58a03e9dc8db2ae940c9d561d5acd01ddc735ebda9d2 |
+| evidence/60-status-billing.txt | Step 6 Audit | f2481e3a1b33aa63a43f28720595ba1e6f7da52ae0192ecfd7bfdc4ec0434a7a |
+| evidence/60-status-root.txt | Step 6 Audit | 9c2a890ac015486c8d3e6e4f6e17b9ce42ee1167af7e06e5b3a88b2dde9661f8 |
+| evidence/61-audit-agent-run.txt | Step 6 Audit | 08da560a2e3fe1b94691e241a583f958361fcf304b26c75820531a6f230a4c0e |
+| evidence/61-audit-llm-context.txt | Step 6 Audit | faf56289389eb4c2300ccadcf3ae7917981f2449185f672266e18689f3c4c671 |
+| evidence/61-outofworkflow-1.txt | Step 6 Audit | 51dbf1f2cb7c3ded83234e0c1d36e9c2b465c18855bee38d1ff98fa45618173b |
+| evidence/61-outofworkflow-2.txt | Step 6 Audit | d031e753ab38afd3a673fde7ed3f46d08da1a109c5544f85bb561a1ebe03d0bd |
+| evidence/61-outofworkflow-3.txt | Step 6 Audit | 025bcaa5e3cced372165c3ed74a9aa6b2539ad33b1d6a88cb189db7e0c56dbd1 |
+| evidence/61-outofworkflow-4.txt | Step 6 Audit | 0f2c93162e01eb0c7e2987aeac8afeddf4391416eccdc616edba15a679ddca0f |
+| evidence/61-outofworkflow-5.txt | Step 6 Audit | 813a3fc6395ff1c6dd5f47433c3f1676f1c6f8eb72e7e9d6717b0180faca7c38 |
+| evidence/61-tampering-1.txt | Step 6 Audit | f915dc319e5c36b2906dce3e64e6795ced82c502c366de61c64c44cd45c794af |
+| evidence/61-tampering-2.txt | Step 6 Audit | b92b96a5c6b0b995a3329cdb922561929be901eeb0e5c6bf16204c8351bd6469 |
+| evidence/61-tampering-3.txt | Step 6 Audit | e9b2651a6c5e28eba0ded3741d332a3b8fec1e96a729e6ca11b275a5b9ed9899 |
+| evidence/61-tampering-4.txt | Step 6 Audit | 7d860a2274d11565ee92babbdbac9eedaa59cceb03ed09ac332da96ad68301d5 |
+| evidence/62-audit-read.txt | Step 6 Audit | ecd24b23c262507ba657e2ef5a694db3f887c38f38e66bdb340bb204a6af761a |
+| evidence/62-audit-read-complete.txt | Step 6 Audit | 462f0328bd02585a71a65b252cf9c9f3db1ef482a1b274ae9896e5e13120989e |
+| evidence/63-after.txt | Step 6 Audit | 58e6a199e7e971156de5498322e56f264f095141daf252596de48569642f67b5 |
+| evidence/63-audit-remove.txt | Step 6 Audit | 9a6064c3a83d1bc14f69fc209694531dd6a01a8f2b8ade6ff5a6d472e44a445f |
+| evidence/63-audit-uninstall.txt | Step 6 Audit | 85432a1150ccb236401ed1fc32cdaab0a72bc62fc2f8dd45657a91340c6e2574 |
+| evidence/63-compare.txt | Step 6 Audit | ce030da78fdf204f968ceed9b58eb28a069bb598bf76890f91679ce81874dea5 |
+| evidence/REPORT-09.md | Step 6 Audit | c16b622d98243505affe53b8121f117f8a32bea77623068f71ea3c91ddf992f5 |
+| sql/60-audit-filter.sql | Step 6 Audit | c44ce8387e426f6d173ec555c561d89a4216d19d39bac33025c5ac4f7b8852ac |
+| sql/60-audit-state.sql | Step 6 Audit | a202e97f6516b18e2245d206f90fe3039b74af594bba38cfd69ca885c796d8e5 |
+| sql/60-audit-status.sql | Step 6 Audit | cebd34c8a4ffa9ff1c48251aa5626c374cab120a79498134192e2b27cad1a037 |
+| sql/60-snapshot.sql | Step 6 Audit | c7994aef37cefeae28c36fc3b2531ac8a7e6894ad767a2cf7491ed62de2201d2 |
+| sql/61-outofworkflow-1.sql | Step 6 Audit | 07a020ad02a6c4beaefd30cce44dec18335d4ce2509bd142cb38cbb1a57644b9 |
+| sql/61-outofworkflow-2.sql | Step 6 Audit | 7a67024e80a7b525508f884e3a680edb7a225dd11afbe50d3703caa3e3c29e22 |
+| sql/61-outofworkflow-3.sql | Step 6 Audit | c261a3937d5c4f6cfd29c52029781c060bf2e9e7689c35b9750081d174ca9d9d |
+| sql/61-outofworkflow-4.sql | Step 6 Audit | 4cf2e6d757174c0589fcbae1ba031ea07ce30e7b8ebaa8a2ca8e2301dfe5e520 |
+| sql/61-outofworkflow-5.sql | Step 6 Audit | d3cd5042f97738960d802ad6b3a548dfa18152215118ba18f04493bc6944b0e4 |
+| sql/61-tampering-1.sql | Step 6 Audit | 1c02af14065b1db3f01361def465d86e616c6aa45debde2c807a38ef669def9f |
+| sql/61-tampering-2.sql | Step 6 Audit | 2680c150fbd857741504abe90fcbd5a74f2e9a3482750de11863220d68d612bd |
+| sql/61-tampering-3.sql | Step 6 Audit | df1666896c6a13f988e7fcc9336f0db7b5294b4af34d5729197565086666f74a |
+| sql/61-tampering-4.sql | Step 6 Audit | 38378804d62846ed3ef75f36731c907698b39100ec0f9a0df1829a784d01f5d3 |
+| sql/63-audit-remove.sql | Step 6 Audit | 30d54ff3fec2c3c28e99c27ce4b8ac2d5721764ae808ec767473fc008b8afa83 |

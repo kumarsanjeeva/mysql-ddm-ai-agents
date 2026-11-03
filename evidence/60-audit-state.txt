@@ -1,0 +1,119 @@
+--------------
+SELECT * FROM mysql.component
+--------------
+
++--------------+--------------------+------------------------------------+
+| component_id | component_group_id | component_urn                      |
++--------------+--------------------+------------------------------------+
+|            1 |                  1 | file://component_masking           |
+|            2 |                  2 | file://component_masking_functions |
+|            3 |                  3 | file://component_object_policy     |
+|            6 |                  6 | file://component_audit_log         |
++--------------+--------------------+------------------------------------+
+4 rows in set (0.008 sec)
+
+--------------
+SHOW TABLES FROM mysql LIKE 'audit%'
+--------------
+
++--------------------------+
+| Tables_in_mysql (audit%) |
++--------------------------+
+| audit_log_filter         |
+| audit_log_user           |
++--------------------------+
+2 rows in set (0.051 sec)
+
+--------------
+SHOW VARIABLES LIKE 'audit_log%'
+--------------
+
++--------------------------------------+------------------------------------+
+| Variable_name                        | Value                              |
++--------------------------------------+------------------------------------+
+| audit_log.buffer_size                | 1048576                            |
+| audit_log.compression                | NONE                               |
+| audit_log.database                   | mysql                              |
+| audit_log.disable                    | OFF                                |
+| audit_log.encryption                 | NONE                               |
+| audit_log.file                       | audit.log                          |
+| audit_log.filter_recovery_mode       | LOG_ALL_IF_INVALID_FILTER_DETECTED |
+| audit_log.flush_interval_seconds     | 0                                  |
+| audit_log.format_unix_timestamp      | OFF                                |
+| audit_log.max_size                   | 0                                  |
+| audit_log.password_history_keep_days | 0                                  |
+| audit_log.prune_seconds              | 0                                  |
+| audit_log.read_buffer_size           | 32768                              |
+| audit_log.rotate_on_size             | 0                                  |
+| audit_log.rotate_on_time             | 0                                  |
+| audit_log.rotate_threshold           | 10                                 |
+| audit_log.strategy                   | ASYNCHRONOUS                       |
++--------------------------------------+------------------------------------+
+17 rows in set (0.079 sec)
+
+--------------
+SHOW STATUS LIKE 'audit_log%'
+--------------
+
++--------------------------------+-------+
+| Variable_name                  | Value |
++--------------------------------+-------+
+| audit_log.current_size         | 477   |
+| audit_log.event_max_drop_size  | 0     |
+| audit_log.events               | 23    |
+| audit_log.events_buffered      | 0     |
+| audit_log.events_direct_writes | 0     |
+| audit_log.events_filtered      | 0     |
+| audit_log.events_lost          | 0     |
+| audit_log.events_written       | 1     |
+| audit_log.file_count           | 1     |
+| audit_log.filter_id            | 0     |
+| audit_log.total_size           | 477   |
+| audit_log.write_waits          | 0     |
++--------------------------------+-------+
+12 rows in set (0.035 sec)
+
+--------------
+SELECT * FROM performance_schema.persisted_variables
+--------------
+
++---------------------------------+----------------+
+| VARIABLE_NAME                   | VARIABLE_VALUE |
++---------------------------------+----------------+
+| log_bin_trust_function_creators | ON             |
++---------------------------------+----------------+
+1 row in set (0.016 sec)
+
+--------------
+SELECT UDF_NAME FROM performance_schema.user_defined_functions WHERE UDF_NAME LIKE 'audit_log%' ORDER BY 1
+--------------
+
++-----------------------------------+
+| UDF_NAME                          |
++-----------------------------------+
+| audit_log_encryption_password_get |
+| audit_log_encryption_password_set |
+| audit_log_filter_flush            |
+| audit_log_filter_remove_filter    |
+| audit_log_filter_remove_user      |
+| audit_log_filter_set_filter       |
+| audit_log_filter_set_user         |
+| audit_log_read                    |
+| audit_log_read_bookmark           |
+| audit_log_rotate                  |
++-----------------------------------+
+10 rows in set (0.076 sec)
+
+--------------
+SELECT * FROM mysql.audit_log_filter
+--------------
+
+Empty set (0.007 sec)
+
+--------------
+SELECT * FROM mysql.audit_log_user
+--------------
+
+Empty set (0.004 sec)
+
+Bye

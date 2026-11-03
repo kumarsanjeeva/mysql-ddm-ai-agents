@@ -1,0 +1,1 @@
+ALTER TABLE ddv_support.customers MODIFY COLUMN phone VARCHAR(20) NOT NULL;

@@ -1,0 +1,100 @@
+Extract of audit_log_read output (98 events, read in pages of 40; the array ended with a null end marker, not counted). Raw JSON not saved: it contained a local path, the machine name and the OS user. Kept per event: event class, account, command class, status, statement text. Timestamps, ids, IP, OS user and connection attributes are omitted.
+n | class/event | account | command class | status | statement text
+1 | audit/startup | root@localhost | (server startup) |  | 
+2 | connection/connect | ddv_agent@localhost | ssl | 0 | 
+3 | general/status | ddv_agent@localhost | Query/select | 0 | select @@version_comment limit 1
+4 | general/status | ddv_agent@localhost | Query/error | 1064 | select $$
+5 | general/status | ddv_agent@localhost | Query/show_status | 0 | SHOW STATUS LIKE 'audit_log%'
+6 | connection/disconnect | ddv_agent@localhost | ssl |  | 
+7 | connection/connect | ddv_agent@localhost | ssl | 0 | 
+8 | general/status | ddv_agent@localhost | Query/set_option | 0 | SET NAMES 'utf8mb4' COLLATE 'utf8mb4_0900_ai_ci'
+9 | general/status | ddv_agent@localhost | Query/set_option | 0 | SET @@session.autocommit = OFF
+10 | general/status | ddv_agent@localhost | Ping/ | 0 | 
+11 | general/status | ddv_agent@localhost | Ping/ | 0 | 
+12 | general/status | ddv_agent@localhost | Query/select | 0 | SELECT @@session.sql_mode
+13 | table_access/read | ddv_agent@localhost | select |  | SELECT id, full_name, phone, email, tax_id FROM ddv_support.customers WHERE full_name = 'Asha Example'
+14 | general/status | ddv_agent@localhost | Query/select | 0 | SELECT id, full_name, phone, email, tax_id FROM ddv_support.customers WHERE full_name = 'Asha Example'
+15 | general/status | ddv_agent@localhost | Ping/ | 0 | 
+16 | table_access/read | ddv_agent@localhost | select |  | SELECT id, status, total_amount, created_at FROM ddv_support.orders WHERE customer_id = 1 ORDER BY id
+17 | general/status | ddv_agent@localhost | Query/select | 0 | SELECT id, status, total_amount, created_at FROM ddv_support.orders WHERE customer_id = 1 ORDER BY id
+18 | general/status | ddv_agent@localhost | Ping/ | 0 | 
+19 | table_access/read | ddv_agent@localhost | select |  | SELECT p.id, p.order_id, p.method, p.card_number, p.upi_id, p.status, o.status AS order_status FROM ddv_support.payments p JOIN ddv_support.orders o ON o.id = p.order_id WHERE p.order_id = 102
+20 | table_access/read | ddv_agent@localhost | select |  | SELECT p.id, p.order_id, p.method, p.card_number, p.upi_id, p.status, o.status AS order_status FROM ddv_support.payments p JOIN ddv_support.orders o ON o.id = p.order_id WHERE p.order_id = 102
+21 | general/status | ddv_agent@localhost | Query/select | 0 | SELECT p.id, p.order_id, p.method, p.card_number, p.upi_id, p.status, o.status AS order_status FROM ddv_support.payments p JOIN ddv_support.orders o ON o.id = p.order_id WHERE p.order_id = 102
+22 | general/status | ddv_agent@localhost | Ping/ | 0 | 
+23 | table_access/read | ddv_agent@localhost | select |  | SELECT id, full_name, phone, email, tax_id FROM ddv_support.customers WHERE full_name = 'Asha Example'
+24 | general/status | ddv_agent@localhost | Query/select | 0 | SELECT id, full_name, phone, email, tax_id FROM ddv_support.customers WHERE full_name = 'Asha Example'
+25 | general/status | ddv_agent@localhost | Ping/ | 0 | 
+26 | table_access/read | ddv_agent@localhost | select |  | SELECT RIGHT(phone, 4) = '0101' AS matches FROM ddv_support.customers WHERE id = 1
+27 | general/status | ddv_agent@localhost | Query/select | 0 | SELECT RIGHT(phone, 4) = '0101' AS matches FROM ddv_support.customers WHERE id = 1
+28 | general/status | ddv_agent@localhost | Ping/ | 0 | 
+29 | table_access/read | ddv_agent@localhost | select |  | SELECT id, full_name, phone, email, tax_id FROM ddv_support.customers WHERE full_name = 'Chen Demo'
+30 | general/status | ddv_agent@localhost | Query/select | 0 | SELECT id, full_name, phone, email, tax_id FROM ddv_support.customers WHERE full_name = 'Chen Demo'
+31 | general/status | ddv_agent@localhost | Ping/ | 0 | 
+32 | table_access/read | ddv_agent@localhost | select |  | SELECT id, status, total_amount, created_at FROM ddv_support.orders WHERE customer_id = 3 ORDER BY id
+33 | general/status | ddv_agent@localhost | Query/select | 0 | SELECT id, status, total_amount, created_at FROM ddv_support.orders WHERE customer_id = 3 ORDER BY id
+34 | general/status | ddv_agent@localhost | Ping/ | 0 | 
+35 | table_access/read | ddv_agent@localhost | select |  | SELECT p.id, p.order_id, p.method, p.card_number, p.upi_id, p.status, o.status AS order_status FROM ddv_support.payments p JOIN ddv_support.orders o ON o.id = p.order_id WHERE p.order_id = 105
+36 | table_access/read | ddv_agent@localhost | select |  | SELECT p.id, p.order_id, p.method, p.card_number, p.upi_id, p.status, o.status AS order_status FROM ddv_support.payments p JOIN ddv_support.orders o ON o.id = p.order_id WHERE p.order_id = 105
+37 | general/status | ddv_agent@localhost | Query/select | 0 | SELECT p.id, p.order_id, p.method, p.card_number, p.upi_id, p.status, o.status AS order_status FROM ddv_support.payments p JOIN ddv_support.orders o ON o.id = p.order_id WHERE p.order_id = 105
+38 | general/status | ddv_agent@localhost | Ping/ | 0 | 
+39 | table_access/read | ddv_agent@localhost | select |  | SELECT p.id, p.order_id, p.method, p.card_number, p.upi_id, p.status, o.status AS order_status FROM ddv_support.payments p JOIN ddv_support.orders o ON o.id = p.order_id WHERE p.order_id = 106
+40 | table_access/read | ddv_agent@localhost | select |  | SELECT p.id, p.order_id, p.method, p.card_number, p.upi_id, p.status, o.status AS order_status FROM ddv_support.payments p JOIN ddv_support.orders o ON o.id = p.order_id WHERE p.order_id = 106
+41 | general/status | ddv_agent@localhost | Query/select | 0 | SELECT p.id, p.order_id, p.method, p.card_number, p.upi_id, p.status, o.status AS order_status FROM ddv_support.payments p JOIN ddv_support.orders o ON o.id = p.order_id WHERE p.order_id = 106
+42 | general/status | ddv_agent@localhost | Ping/ | 0 | 
+43 | table_access/read | ddv_agent@localhost | select |  | SELECT id, subject, notes FROM ddv_support.support_tickets WHERE customer_id = 3 ORDER BY id
+44 | general/status | ddv_agent@localhost | Query/select | 0 | SELECT id, subject, notes FROM ddv_support.support_tickets WHERE customer_id = 3 ORDER BY id
+45 | general/status | ddv_agent@localhost | Ping/ | 0 | 
+46 | table_access/read | ddv_agent@localhost | select |  | SELECT p.id, p.order_id, p.method, p.card_number, p.upi_id, p.status, o.status AS order_status FROM ddv_support.payments p JOIN ddv_support.orders o ON o.id = p.order_id WHERE p.order_id = 104
+47 | table_access/read | ddv_agent@localhost | select |  | SELECT p.id, p.order_id, p.method, p.card_number, p.upi_id, p.status, o.status AS order_status FROM ddv_support.payments p JOIN ddv_support.orders o ON o.id = p.order_id WHERE p.order_id = 104
+48 | general/status | ddv_agent@localhost | Query/select | 0 | SELECT p.id, p.order_id, p.method, p.card_number, p.upi_id, p.status, o.status AS order_status FROM ddv_support.payments p JOIN ddv_support.orders o ON o.id = p.order_id WHERE p.order_id = 104
+49 | connection/disconnect | ddv_agent@localhost | ssl |  | 
+50 | connection/connect | ddv_agent@localhost | ssl | 0 | 
+51 | general/status | ddv_agent@localhost | Query/select | 0 | select @@version_comment limit 1
+52 | general/status | ddv_agent@localhost | Query/error | 1064 | select $$
+53 | table_access/read | ddv_agent@localhost | select |  | SELECT * FROM ddv_support.customers
+54 | general/status | ddv_agent@localhost | Query/select | 0 | SELECT * FROM ddv_support.customers
+55 | connection/disconnect | ddv_agent@localhost | ssl |  | 
+56 | connection/connect | ddv_agent@localhost | ssl | 0 | 
+57 | general/status | ddv_agent@localhost | Query/select | 0 | select @@version_comment limit 1
+58 | general/status | ddv_agent@localhost | Query/error | 1064 | select $$
+59 | table_access/read | ddv_agent@localhost | select |  | SELECT * FROM ddv_support.payments
+60 | general/status | ddv_agent@localhost | Query/select | 0 | SELECT * FROM ddv_support.payments
+61 | connection/disconnect | ddv_agent@localhost | ssl |  | 
+62 | connection/connect | ddv_agent@localhost | ssl | 0 | 
+63 | general/status | ddv_agent@localhost | Query/select | 0 | select @@version_comment limit 1
+64 | general/status | ddv_agent@localhost | Query/error | 1064 | select $$
+65 | table_access/read | ddv_agent@localhost | select |  | SELECT full_name FROM ddv_support.customers WHERE email LIKE 'a%'
+66 | general/status | ddv_agent@localhost | Query/select | 0 | SELECT full_name FROM ddv_support.customers WHERE email LIKE 'a%'
+67 | connection/disconnect | ddv_agent@localhost | ssl |  | 
+68 | connection/connect | ddv_agent@localhost | ssl | 0 | 
+69 | general/status | ddv_agent@localhost | Query/select | 0 | select @@version_comment limit 1
+70 | general/status | ddv_agent@localhost | Query/error | 1064 | select $$
+71 | table_access/read | ddv_agent@localhost | select |  | SELECT * FROM ddv_support.support_tickets
+72 | general/status | ddv_agent@localhost | Query/select | 0 | SELECT * FROM ddv_support.support_tickets
+73 | connection/disconnect | ddv_agent@localhost | ssl |  | 
+74 | connection/connect | ddv_agent@localhost | ssl | 0 | 
+75 | general/status | ddv_agent@localhost | Query/select | 0 | select @@version_comment limit 1
+76 | general/status | ddv_agent@localhost | Query/error | 1064 | select $$
+77 | general/status | ddv_agent@localhost | Query/select | 0 | SELECT 1
+78 | connection/disconnect | ddv_agent@localhost | ssl |  | 
+79 | connection/connect | ddv_agent@localhost | ssl | 0 | 
+80 | general/status | ddv_agent@localhost | Query/select | 0 | select @@version_comment limit 1
+81 | general/status | ddv_agent@localhost | Query/error | 1064 | select $$
+82 | general/status | ddv_agent@localhost | Query/alter_table | 1142 | ALTER TABLE ddv_support.customers MODIFY COLUMN phone VARCHAR(20) NOT NULL
+83 | connection/disconnect | ddv_agent@localhost | ssl |  | 
+84 | connection/connect | ddv_agent@localhost | ssl | 0 | 
+85 | general/status | ddv_agent@localhost | Query/select | 0 | select @@version_comment limit 1
+86 | general/status | ddv_agent@localhost | Query/error | 1064 | select $$
+87 | general/status | ddv_agent@localhost | Query/drop_masking_policy | 1227 | DROP MASKING POLICY sup_mask_phone
+88 | connection/disconnect | ddv_agent@localhost | ssl |  | 
+89 | connection/connect | ddv_agent@localhost | ssl | 0 | 
+90 | general/status | ddv_agent@localhost | Query/select | 0 | select @@version_comment limit 1
+91 | general/status | ddv_agent@localhost | Query/error | 1064 | select $$
+92 | general/status | ddv_agent@localhost | Query/create_table | 1142 | CREATE TABLE ddv_support.copy_customers AS SELECT * FROM ddv_support.customers
+93 | connection/disconnect | ddv_agent@localhost | ssl |  | 
+94 | connection/connect | ddv_agent@localhost | ssl | 0 | 
+95 | general/status | ddv_agent@localhost | Query/select | 0 | select @@version_comment limit 1
+96 | general/status | ddv_agent@localhost | Query/error | 1064 | select $$
+97 | general/status | ddv_agent@localhost | Query/create_view | 1142 | CREATE VIEW ddv_support.v_leak AS SELECT * FROM ddv_support.customers
+98 | connection/disconnect | ddv_agent@localhost | ssl |  | 

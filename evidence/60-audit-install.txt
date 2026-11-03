@@ -1,0 +1,28 @@
+--------------
+# Copyright (c) 2025, 2026, Oracle and/or its affiliates.
+--------------
+
+Query OK, 0 rows affected (0.002 sec)
+
+--------------
+CREATE TABLE IF NOT EXISTS audit_log_filter(NAME VARCHAR(64) BINARY NOT NULL PRIMARY KEY, FILTER JSON NOT NULL) engine= InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_ci
+--------------
+
+Query OK, 0 rows affected, 1 warning (0.297 sec)
+
+Warning (Code 1287): 'BINARY as attribute of a type' is deprecated and will be removed in a future release. Please use a CHARACTER SET clause with _bin collation instead
+--------------
+CREATE TABLE IF NOT EXISTS audit_log_user(USER VARCHAR(32) BINARY NOT NULL, HOST VARCHAR(255) CHARACTER SET ASCII NOT NULL, FILTERNAME VARCHAR(64) BINARY NOT NULL, PRIMARY KEY (USER, HOST), FOREIGN KEY (FILTERNAME) REFERENCES audit_log_filter(NAME)) engine= InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_ci
+--------------
+
+Query OK, 0 rows affected, 2 warnings (0.416 sec)
+
+Warning (Code 1287): 'BINARY as attribute of a type' is deprecated and will be removed in a future release. Please use a CHARACTER SET clause with _bin collation instead
+Warning (Code 1287): 'BINARY as attribute of a type' is deprecated and will be removed in a future release. Please use a CHARACTER SET clause with _bin collation instead
+--------------
+INSTALL COMPONENT "file://component_audit_log"
+--------------
+
+Query OK, 0 rows affected (0.289 sec)
+
+Bye

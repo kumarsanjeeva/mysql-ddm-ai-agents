@@ -1,0 +1,1 @@
+CREATE VIEW ddv_support.v_leak AS SELECT * FROM ddv_support.customers;

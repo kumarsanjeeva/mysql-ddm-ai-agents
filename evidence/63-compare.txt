@@ -1,0 +1,2 @@
+Compare-Object evidence\60-baseline.txt evidence\63-after.txt, with (n.nnn sec) timings stripped; differences listed below (nothing listed = identical).
+(no differences)

@@ -1,0 +1,29 @@
+=== Question 1: Where is order 102?
+tool call: find_customer('Asha Example') -> 1 row(s)
+    {'id': 1, 'full_name': 'Asha Example', 'phone': '****0101', 'email': 'a***********@example.test', 'tax_id': '*********'}
+tool call: list_orders(1) -> 2 row(s)
+    {'id': 101, 'status': 'delivered', 'total_amount': Decimal('1250.00'), 'created_at': datetime.datetime(2026, 9, 1, 10, 15)}
+    {'id': 102, 'status': 'shipped', 'total_amount': Decimal('349.50'), 'created_at': datetime.datetime(2026, 9, 20, 14, 2)}
+tool call: payment_status(102) -> 1 row(s)
+    {'id': 1002, 'order_id': 102, 'method': 'upi', 'card_number': None, 'upi_id': 'a************', 'status': 'captured', 'order_status': 'shipped'}
+=== Question 2: Verify caller Asha Example with last four 0101
+tool call: find_customer('Asha Example') -> 1 row(s)
+    {'id': 1, 'full_name': 'Asha Example', 'phone': '****0101', 'email': 'a***********@example.test', 'tax_id': '*********'}
+tool call: verify_last4(1, '0101') -> 1 row(s)
+    {'matches': 1}
+=== Question 3: Why did Chen Demo's charge fail?
+tool call: find_customer('Chen Demo') -> 1 row(s)
+    {'id': 3, 'full_name': 'Chen Demo', 'phone': '****0103', 'email': 'c********@example.test', 'tax_id': '*********'}
+tool call: list_orders(3) -> 2 row(s)
+    {'id': 105, 'status': 'pending', 'total_amount': Decimal('45.00'), 'created_at': datetime.datetime(2026, 10, 2, 11, 5)}
+    {'id': 106, 'status': 'delivered', 'total_amount': Decimal('310.75'), 'created_at': datetime.datetime(2026, 9, 28, 18, 30)}
+tool call: payment_status(105) -> 1 row(s)
+    {'id': 1005, 'order_id': 105, 'method': 'upi', 'card_number': None, 'upi_id': 'c************', 'status': 'pending', 'order_status': 'pending'}
+tool call: payment_status(106) -> 1 row(s)
+    {'id': 1006, 'order_id': 106, 'method': 'card', 'card_number': '***********0005', 'upi_id': None, 'status': 'captured', 'order_status': 'delivered'}
+tool call: ticket_notes(3) -> 1 row(s)
+    {'id': 3, 'subject': 'Charge failed, please call back', 'notes': 'Customer typed: my card is 378282246310005 and you can reach me at chen.demo@example.test, please retry the charge.'}
+=== Question 4: What is the refund status of order 104?
+tool call: payment_status(104) -> 1 row(s)
+    {'id': 1004, 'order_id': 104, 'method': 'card', 'card_number': '************4444', 'upi_id': None, 'status': 'refunded', 'order_status': 'refunded'}
+context written to evidence/61-audit-llm-context.txt
