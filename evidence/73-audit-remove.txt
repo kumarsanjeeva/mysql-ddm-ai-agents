@@ -1,0 +1,51 @@
+--------------
+SELECT audit_log_filter_remove_user('ddv_agent@%')
+--------------
+
++---------------------------------------------+
+| audit_log_filter_remove_user('ddv_agent@%') |
++---------------------------------------------+
+| OK                                          |
++---------------------------------------------+
+1 row in set (0.061 sec)
+
+--------------
+SELECT audit_log_filter_remove_filter('agent_log')
+--------------
+
++---------------------------------------------+
+| audit_log_filter_remove_filter('agent_log') |
++---------------------------------------------+
+| OK                                          |
++---------------------------------------------+
+1 row in set (0.051 sec)
+
+--------------
+SELECT * FROM mysql.audit_log_filter
+--------------
+
+Empty set (0.004 sec)
+
+--------------
+SELECT * FROM mysql.audit_log_user
+--------------
+
+Empty set (0.003 sec)
+
+--------------
+SHOW STATUS LIKE 'audit_log.events%'
+--------------
+
++--------------------------------+-------+
+| Variable_name                  | Value |
++--------------------------------+-------+
+| audit_log.events               | 1100  |
+| audit_log.events_buffered      | 0     |
+| audit_log.events_direct_writes | 0     |
+| audit_log.events_filtered      | 0     |
+| audit_log.events_lost          | 0     |
+| audit_log.events_written       | 137   |
++--------------------------------+-------+
+6 rows in set (0.010 sec)
+
+Bye

@@ -71,7 +71,7 @@ All are captured tests unless stated.
 - Seed note: ticket 3 originally quoted another customer's card; fixed in `sql/20-fix-ticket-card.sql` (evidence/20-fix-ticket-card.txt).
 - The shape probes (`LENGTH`, `LEFT`) and `ORDER BY` can't discriminate between masked and real values on this data. Step 4 repeats them on purpose-built data. (reasoning)
 - The agent tools select columns they don't need, so masked placeholders enter the model context. (reasoning)
-- Free-text notes need a column-level grant or an application-side redaction step. (reasoning, untested)
+- Free-text notes: a column grant denied notes on the base table (F29, F34) but not through a view (F33, F34). Application-side redaction was not tested.
 
 ## 6. Process notes (for a "what went wrong" box)
 
@@ -85,6 +85,7 @@ All are captured tests unless stated.
 - (d) FIREWALL_ADMIN was granted to root@localhost for the Firewall test and revoked afterwards. (F46; 53-firewall-uninstall.txt)
 - (e) The Audit install script was run against `ddv_sec`, while the manual's example uses `-D mysql`, so the Audit failure (F54 to F56) may come from that choice.
 - (f) CREATE TABLE printed warnings during the Audit attempt (1 and 2) that were not captured. (not captured; the Step 6 install against `mysql` printed the same warnings, code 1287, see F58)
+- (h) The Step 6 raw audit JSON held a local path, the machine name and the OS user name, so only extracts are in the repo (62-audit-read.txt, 62-audit-read-complete.txt). The Step 7 raw JSON held the same and is kept out of the repo as well (72-stack-audit-extract.txt is the extract).
 - (g) The Firewall install script's `CREATE TABLE IF NOT EXISTS firewall_group_allowlist` also printed "2 warnings" whose text was not captured. (53-firewall-install.txt)
 
 ## 7. Not tested
@@ -127,7 +128,8 @@ Avoid:
 - "cannot be bypassed"
 - "fails closed" without the policy-design condition
 - "protects emails" for the demo mask
-- any claim about Audit, and any Firewall claim beyond F45 to F53
+- any Audit claim beyond F58 to F65, and any claim about Audit and Firewall together beyond the F66-onward entries
+- any Firewall claim beyond F45 to F53 and the F66-onward entries
 
 Safe wording for Audit and Firewall:
 
@@ -437,7 +439,7 @@ Added after earlier sections; earlier entries unchanged. All captured unless sta
 - **F59.** (captured) `audit_log_filter_set_filter('agent_log', '{ "filter": { "log": true } }')` and `audit_log_filter_set_user('ddv_agent@%', 'agent_log')` both returned OK. `SHOW STATUS LIKE 'audit_log%'` gave `audit_log.filter_id` 1 for ddv_agent and 0 for root and ddv_billing. (60-audit-filter.txt, 60-status-root.txt, 60-status-agent.txt, 60-status-billing.txt)
 - **F60.** (captured) The first `audit_log_read` call, started at the first event, returned 89 events (32634 bytes; `audit_log.read_buffer_size` is 32768, so truncation by the buffer is reasoning). Paging with `{"timestamp", "id", "max_array_length": 40}` returned 98 events followed by a null marker; the start event is returned again, so pages overlap by one. `audit_log.events_written` was 98 afterwards. Both extracts are kept. (62-audit-read.txt, 62-audit-read-complete.txt, 63-audit-remove.txt)
 - **F61.** (captured) The 98 events were one server startup event (root) and 97 events from ddv_agent: 11 connects, 11 disconnects, 19 table_access reads and the rest general/status. Root and ddv_billing sessions that ran while the filter was assigned to ddv_agent are not in the log. (62-audit-read-complete.txt)
-- **F62.** (captured) Denied statements were logged with their error codes: ALTER TABLE 1142, DROP MASKING POLICY 1227, CREATE TABLE ... AS SELECT 1142, CREATE VIEW 1142; they have a general/status event and no table_access event. The five out-of-workflow selects were logged as allowed (status 0), with statement text including literals such as the customer name and the LIKE pattern. Query results are not in the log. (61-outofworkflow-1.txt to 61-tampering-4.txt, 62-audit-read-complete.txt)
+- **F62.** (captured) Denied statements were logged with their error codes: ALTER TABLE 1142, DROP MASKING POLICY 1227, CREATE TABLE ... AS SELECT 1142, CREATE VIEW 1142; they have a general/status event and no table_access event. The five out-of-workflow selects were logged as allowed (status 0), with statement text including literals such as the customer name and the LIKE pattern. Query results are not in the log. The Firewall was not installed in that run, so "allowed" means only that Audit logged the statement with status 0. The files 61-outofworkflow-*.txt and 61-tampering-*.txt contain no ERROR lines (stderr was not redirected into them); the error codes come from 62-audit-read-complete.txt. (61-outofworkflow-1.txt to 61-tampering-4.txt, 62-audit-read-complete.txt)
 - **F63.** (captured) The raw `audit_log_read` JSON held a local path, the machine name and the OS user name (scan counts 1, 1 and 10), so the repo keeps only an extract. The extract scan found 0 forbidden terms, 0 passwords and 0 paths. (62-audit-read-complete.txt)
 - **F64.** (captured) `audit_log_filter_remove_user` and `audit_log_filter_remove_filter` returned OK and both filter tables were empty. The uninstall script, run with `-D mysql` while the only connections were root and the event scheduler, ended without ERROR lines; the after snapshot equals the baseline. (63-audit-remove.txt, 63-audit-uninstall.txt, 63-after.txt, 63-compare.txt)
 - **F65.** (not checked) The audit log file in the Data folder: access to the folder was denied, so names and sizes were not checked. (not tested) Statements containing passwords were deliberately not run while the component was loaded, so whether such text is masked in the log is not tested.
@@ -488,3 +490,90 @@ Files in sql/, agent/ and evidence/ not listed in earlier index sections. Step =
 | sql/61-tampering-3.sql | Step 6 Audit | df1666896c6a13f988e7fcc9336f0db7b5294b4af34d5729197565086666f74a |
 | sql/61-tampering-4.sql | Step 6 Audit | 38378804d62846ed3ef75f36731c907698b39100ec0f9a0df1829a784d01f5d3 |
 | sql/63-audit-remove.sql | Step 6 Audit | 30d54ff3fec2c3c28e99c27ce4b8ac2d5721764ae808ec767473fc008b8afa83 |
+
+## 23. Step 7 findings (F66 onward)
+
+Added after earlier sections; earlier entries unchanged. All captured unless stated. Files are in evidence/ (70-* to 73-*).
+
+- **F66.** (captured) Audit (filter `agent_log` on `ddv_agent@%`) and the Firewall component (group `fw_agent`, 8 recorded rules, PROTECTING) were loaded together with the masking policies. Install, filter and enlist steps ended without errors; both filter calls returned OK; `audit_log.filter_id` was 0 for root and 1 for ddv_agent. The 8 recorded rules equal those of Step 5 (`53-firewall-allowlist.txt`). (70-audit-install.txt, 70-audit-filter.txt, 70-status-root.txt, 70-status-agent.txt, 71-fw-install.txt, 71-fw-recording.txt, 71-fw-enlist.txt, 71-fw-allowlist.txt)
+- **F67.** (captured) In PROTECTING mode the four scripted questions ran for `ddv_agent`, with masked values in the output; `firewall_access_denied` stayed 18 and `firewall_access_granted` went from 14 to 28. (71-stack-questions.txt, 71-stack-questions-status-before.txt, 71-stack-questions-status-after.txt)
+- **F68.** (captured) For each of the five out-of-workflow selects and each of the four tampering statements, run on its own, `firewall_access_denied` rose by 2 (0 to 18 over nine runs) and `firewall_access_granted` stayed 14. (71-stack-ow1-status-before.txt to 71-stack-tamp4-status-after.txt)
+- **F69.** (captured) The Audit log of the run holds 137 events: 1 server startup (root) and 136 from `ddv_agent`, with 12 connects, 12 disconnects, 30 table_access reads and 82 general/status events. `audit_log.events_written` was 137. (72-stack-audit-extract.txt, 73-audit-remove.txt)
+- **F70.** (captured) Firewall-denied statements appear in the Audit log as general/status events with status 6444, including `select @@version_comment limit 1` (the client's own first statement) in every denied run, and the four tampering statements (sql commands alter_table, drop_masking_policy, create_table, create_view). The denied selects have no table_access event. `select $$` appears with status 1064 in every client run. (72-stack-audit-extract.txt)
+- **F71.** (captured, reasoning for the cause) The two denials per run counted in F68 match the two status 6444 events per run in F70; the same pattern would explain the Step 5 counter of 10 for 5 visible errors (F49), whose files show each statement once. (53-firewall-protecting.txt, 72-stack-audit-extract.txt)
+- **F72.** (captured) The tampering statements were denied with status 6444 by the Firewall, where without it they were denied by privileges with 1142 and 1227 (F11, 24-tampering.txt). The ERROR lines are not in the 71-stack files (stderr was not redirected); the status is in 72-stack-audit-extract.txt. (71-stack-tamp1.txt to 71-stack-tamp4.txt, 72-stack-audit-extract.txt)
+- **F73.** (captured) Teardown ran in this order without errors: group RESET, delist, remove; FIREWALL_ADMIN revoked; Audit user assignment and filter removed (both OK); Firewall uninstall script on `ddv_sec`; `RESET PERSIST component_firewall.database`; Audit uninstall script on `mysql`; `DROP SCHEMA ddv_sec`. Only root and the event scheduler were connected before it. root's grants no longer list FIREWALL_ADMIN. (73-precheck.txt, 73-fw-group-teardown.txt, 73-audit-remove.txt, 73-fw-uninstall.txt, 73-reset-persist.txt, 73-audit-uninstall.txt, 73-drop-schema.txt, 73-grants-check.txt)
+- **F74.** (captured) The after snapshot equals the baseline except for the processlist row of the capturing session (connection id and port). (70-baseline.txt, 73-after.txt, 73-compare.txt)
+- **F75.** (captured) The raw Audit JSON held a local path, the machine name and the OS user name; it is not in the repo. The extract scan found 0 forbidden terms, 0 passwords and 0 paths. No statement containing a password was run while Audit was loaded. (72-stack-audit-extract.txt)
+- **F76.** (not tested, remaining) Firewall DETECTING mode; enumeration of customers through an allowed Firewall shape; other accounts in the Firewall group or Audit filter; ddv_billing under the Firewall; password-bearing statements in the Audit log; the audit log file in the Data folder; Audit rotation, pruning, encryption and compression; persistence across a server restart; a real LLM run; masking-policy changes while the Firewall is PROTECTING; `ALTER TABLE ... MODIFY COLUMN` without a `MASKING POLICY` clause for an account holding ALTER; aggregates and subqueries beyond F21 to F26.
+
+## 24. Evidence index additions (Step 7)
+
+Files in sql/, agent/ and evidence/ not listed in earlier index sections. Step = Step 7.
+
+| File | Step | SHA-256 |
+|---|---|---|
+| agent/support_agent_stack.py | Step 7 | 3a22e1b0b4aa4239fab3e56583ae21dd337cd8a144011cd4599db5f7d9a4fb45 |
+| evidence/70-audit-filter.txt | Step 7 | 8763b923a5fd18eddb68e7c4c27a8747c50a63e2dc27b3b573d00061eec530f2 |
+| evidence/70-audit-install.txt | Step 7 | c491234501e5ecea8f84ad776fe2436801e84945049b0a91ed646892aa887677 |
+| evidence/70-baseline.txt | Step 7 | f0ed849302e4c57bdef9d974a137666dcd122c80593a8d6d263a7d3d32fa5e40 |
+| evidence/70-status-agent.txt | Step 7 | f70da63191fa09af4b2c7077259381447a3ef5d1706a7555203c509d85d57b3b |
+| evidence/70-status-root.txt | Step 7 | ff0dbb3c838699c49e3aa81f0c687016be0b9a62d7ee51d7694faf44769d7138 |
+| evidence/71-fw-allowlist.txt | Step 7 | 706c29dc0997a3af9814d5e31d675b0966cd55a68c091a3b7905075faa16d68b |
+| evidence/71-fw-enlist.txt | Step 7 | bb75d1fcd792b8158026f4f891f1d1632cab981f6a1535aeccfadabab15fbdf3 |
+| evidence/71-fw-install.txt | Step 7 | d6628d5a452652c75433ce7dbbe32aa82e537ccef8a353cd63cf32614006f538 |
+| evidence/71-fw-protecting-start.txt | Step 7 | cfc3a5d47a3521e78bbe0932732d1712bc4a6f32bd3d83a8a40a956bb40ec7f8 |
+| evidence/71-fw-recording.txt | Step 7 | 552149b5b0acbf1cc6466232b1057be72ca9fc5db447e00c6b630355cedaee89 |
+| evidence/71-fw-schema-create.txt | Step 7 | c5c009271a37b2a39218338e1ef70ca983ed6ba7cbf7a0b2907f0c7285e41790 |
+| evidence/71-fw-state.txt | Step 7 | ecd3a4dbf96135d349f8338f335645c31ce51a3da16af510174b5d22d03889fc |
+| evidence/71-stack-llm-context.txt | Step 7 | faf56289389eb4c2300ccadcf3ae7917981f2449185f672266e18689f3c4c671 |
+| evidence/71-stack-ow1.txt | Step 7 | 2ddc8564f16c525bcf9c462aca76f22691992f92043cc503eb2737ae4ed56442 |
+| evidence/71-stack-ow1-status-after.txt | Step 7 | 96538e62e1acfb0df03a644a2fa39ef1fb74cad813e5b23b544a4a2818ac4efe |
+| evidence/71-stack-ow1-status-before.txt | Step 7 | 0a0897a6e82ae0378e584ee060a610f7555091f4157c210427a800fbc33d0ad0 |
+| evidence/71-stack-ow2.txt | Step 7 | 0e081ba671874710b873fd4d4ee0d888a4f15eb6000211e0a0ce5388b04d1259 |
+| evidence/71-stack-ow2-status-after.txt | Step 7 | 5be4c44194b3d4810dbee3fcebd503ea5ce9773ecf4035b6b1e51f4f6bbe1116 |
+| evidence/71-stack-ow2-status-before.txt | Step 7 | daf3361058e6df36623ea296f1fe44b58fe5d823ed59888c96d1314193a502e4 |
+| evidence/71-stack-ow3.txt | Step 7 | 1e0dc0ca3dad3af740f35e05da5d05c9c8f55e954c2b3e4c35ccf7500e30145c |
+| evidence/71-stack-ow3-status-after.txt | Step 7 | 40bc8547d7a9c0ecc627fa4e90ccc2b46cbac307ff236a32a3153ca99fc3b947 |
+| evidence/71-stack-ow3-status-before.txt | Step 7 | 9f2fc959d064e2dfb504c4d23c18cb17a8b7928dd4ea2038f85077be47fdb73f |
+| evidence/71-stack-ow4.txt | Step 7 | 796a6366ca02258899a8486a87a77839b5634b862a29bd88eafd6748253da4e0 |
+| evidence/71-stack-ow4-status-after.txt | Step 7 | ca693420479b9e255c31f2f0c833418a92babd8043b97523ff373195caf1b3f1 |
+| evidence/71-stack-ow4-status-before.txt | Step 7 | b0d3f8ae9875b3de48d4b6a6ac5f5d7b3343b239e5b2fe294145f88a8079b3e6 |
+| evidence/71-stack-ow5.txt | Step 7 | 5d5756ea6d49c3c4ceb62864eba1e746ec5d440b51b7badc3ebd92b0912d5914 |
+| evidence/71-stack-ow5-status-after.txt | Step 7 | 6aab4a4ab8fe4e34230f32a74a9ebb1d5b28dcf4d71f164c814b78a18fb1bf26 |
+| evidence/71-stack-ow5-status-before.txt | Step 7 | ca693420479b9e255c31f2f0c833418a92babd8043b97523ff373195caf1b3f1 |
+| evidence/71-stack-questions.txt | Step 7 | 47ff05288149476250a9168e2e02e7768e7f275fa89dbee4d694ad3cda374a5d |
+| evidence/71-stack-questions-status-after.txt | Step 7 | c912f61ad8b3cd6dd26147fd2aea2ec1ed7b57da64960a77266128422898a8f0 |
+| evidence/71-stack-questions-status-before.txt | Step 7 | 7ef21d70408bf6656c07037ec936c24556e2ec063824955b4c9d331e010eca31 |
+| evidence/71-stack-recording-run.txt | Step 7 | 47ff05288149476250a9168e2e02e7768e7f275fa89dbee4d694ad3cda374a5d |
+| evidence/71-stack-tamp1.txt | Step 7 | f915dc319e5c36b2906dce3e64e6795ced82c502c366de61c64c44cd45c794af |
+| evidence/71-stack-tamp1-status-after.txt | Step 7 | dbfc35cced8b5c4a1cef03edb9d69649a4d2901a8bfdd88c8be6d4c14e84befb |
+| evidence/71-stack-tamp1-status-before.txt | Step 7 | 46bac00644a127709cba1cdad12aee73e099f7a2fbce00729bbbf94a4fce5798 |
+| evidence/71-stack-tamp2.txt | Step 7 | b92b96a5c6b0b995a3329cdb922561929be901eeb0e5c6bf16204c8351bd6469 |
+| evidence/71-stack-tamp2-status-after.txt | Step 7 | d9eeb53e997f12e44c45bf4e185d5f02cb28ad3ccb4d12cac3bb4c8963a497a5 |
+| evidence/71-stack-tamp2-status-before.txt | Step 7 | 3944dfa608a49bd67b53abaced540d7db9b6a311b8570ec0e3d41068d777cbb7 |
+| evidence/71-stack-tamp3.txt | Step 7 | e9b2651a6c5e28eba0ded3741d332a3b8fec1e96a729e6ca11b275a5b9ed9899 |
+| evidence/71-stack-tamp3-status-after.txt | Step 7 | e44f53ae9356c387e77c56645591d14ac909a5021468d1d0f805837835b1b977 |
+| evidence/71-stack-tamp3-status-before.txt | Step 7 | 5388fc414de502d2b8318ecf676b1681157e349e87b34fcbcf883399d2c8506c |
+| evidence/71-stack-tamp4.txt | Step 7 | 7d860a2274d11565ee92babbdbac9eedaa59cceb03ed09ac332da96ad68301d5 |
+| evidence/71-stack-tamp4-status-after.txt | Step 7 | 536acbe23e7479768be9ac8d98f796e51a5867154c94ffb9e810a6d55242765f |
+| evidence/71-stack-tamp4-status-before.txt | Step 7 | 55dbb8dd927e4a21bf4e14b20ccebcba49b3bf726898e50084424be880081963 |
+| evidence/72-stack-audit-extract.txt | Step 7 | 64579fa89934b29f1349271fc233b3fc91555c3f5696242924d8dc59c615eb8d |
+| evidence/73-after.txt | Step 7 | 2a0993c402a92eb7c64b8d94cd9789f7b58435b868f3c2f73c857a926547d515 |
+| evidence/73-audit-remove.txt | Step 7 | 4b1a6ea9abf46cfb83338b25eb7a4a0a37ba25aa7b6726238d64b25b87f8a203 |
+| evidence/73-audit-uninstall.txt | Step 7 | 47a47d249eacd3873ded8e0ed1d0c14f0ea964300570696b109bede3039e2b04 |
+| evidence/73-compare.txt | Step 7 | b8fc4adcb578e0f4ab9086565cf91806ee3ba19f10b2ccbedd4d4d58b42f63c4 |
+| evidence/73-drop-schema.txt | Step 7 | 2413728ae8557781d403ce511352930f6e86d45939655964dd48a07e45557540 |
+| evidence/73-fw-group-teardown.txt | Step 7 | f058de9aa86ee4d084771e77023fd94538c6e8cf2449fd87ce7bdb2dd958916f |
+| evidence/73-fw-uninstall.txt | Step 7 | e2b2ffe5d163e2be14e0ab5afaafa2c36cb0e121549029f8b8dea66499e01158 |
+| evidence/73-grants-check.txt | Step 7 | 3550030ebf48575ba0eda57b38e77db98e6921cd944d6f36d20abe3a2480807d |
+| evidence/73-precheck.txt | Step 7 | 2358ceba57124f6155ce214847b830be6d3bed78b225c1f337bb486a8181101e |
+| evidence/73-reset-persist.txt | Step 7 | e98b7c17a8d375e03d907cab652a3289b46c1e9f02344f6e6c9afd840852588b |
+| evidence/REPORT-10.md | Step 7 | 02274eee99888dee4d16e86ca4cca7d0c595ac34255d8c43d2838507160814e6 |
+| sql/70-snapshot.sql | Step 7 | 4721672cf159c566ffb98855e3f7ad28295289d5309cdf76b2cd5f850331797b |
+| sql/71-fw-status.sql | Step 7 | 6311926eb7342d1acd171ce34635739aad3351031e5766706eb9520bb33c3afb |
+| sql/73-audit-remove.sql | Step 7 | 85341c846e3d00e26b4bf65182fc6eb8addcd0814837056d42ba480471eb2986 |
+| sql/73-drop-schema.sql | Step 7 | 5229957f91af9d92915dfe0a76a7352a81e1369cf626555fce893334fd3edb18 |
+| sql/73-fw-group-teardown.sql | Step 7 | f41121a7293b208ada1ced5a4f9ad35ec0fa01720bd390c6187d177c0b660342 |
+| sql/73-grants-check.sql | Step 7 | 10db481151c0ed792631c9a479cf5c751b98aae186bf7ed50b6b6271f44ab119 |
+| sql/73-precheck.sql | Step 7 | c9fd76a0b9242d6aacbddf2bb86ece8daffeebb6ae8ec58d82a019a4b09cf3d3 |

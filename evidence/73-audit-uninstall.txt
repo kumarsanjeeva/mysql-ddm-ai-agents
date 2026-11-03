@@ -1,0 +1,73 @@
+--------------
+# Copyright (c) 2025, 2026, Oracle and/or its affiliates.
+--------------
+
+Query OK, 0 rows affected (0.003 sec)
+
+--------------
+-- Audit Log Uninstallation script
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+-- 1. Drops the functions.
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+-- 2. Drops the tables.
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+-- 3. Uninstalls the component.
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+-- Note: Please specify the schema name before
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+-- running the script using either -D or --database.
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+-- Uninstall the component.
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+UNINSTALL COMPONENT "file://component_audit_log"
+--------------
+
+Query OK, 0 rows affected (0.103 sec)
+
+--------------
+-- Drop the tables.
+--------------
+
+Query OK, 0 rows affected (0.005 sec)
+
+--------------
+DROP TABLE IF EXISTS audit_log_user
+--------------
+
+Query OK, 0 rows affected (0.172 sec)
+
+--------------
+DROP TABLE IF EXISTS audit_log_filter
+--------------
+
+Query OK, 0 rows affected (0.103 sec)
+
+Bye

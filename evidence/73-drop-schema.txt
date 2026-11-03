@@ -1,0 +1,13 @@
+--------------
+DROP SCHEMA ddv_sec
+--------------
+
+Query OK, 0 rows affected (0.127 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.003 sec)
+
+Bye

@@ -1,0 +1,46 @@
+HEADER: NO LLM IS CALLED. This is the text a model WOULD receive as
+context for each question. Produced by agent/support_agent.py as ddv_agent.
+
+##### CONTEXT FOR QUESTION 1 #####
+SYSTEM: You are a support agent. Answer using only the tool results.
+USER QUESTION: Where is order 102?
+TOOL RESULTS:
+- find_customer('Asha Example') -> 1 row(s)
+    id=1, full_name=Asha Example, phone=****0101, email=a***********@example.test, tax_id=*********
+- list_orders(1) -> 2 row(s)
+    id=101, status=delivered, total_amount=1250.00, created_at=2026-09-01 10:15:00
+    id=102, status=shipped, total_amount=349.50, created_at=2026-09-20 14:02:00
+- payment_status(102) -> 1 row(s)
+    id=1002, order_id=102, method=upi, card_number=None, upi_id=a************, status=captured, order_status=shipped
+
+##### CONTEXT FOR QUESTION 2 #####
+SYSTEM: You are a support agent. Answer using only the tool results.
+USER QUESTION: Verify caller Asha Example with last four 0101
+TOOL RESULTS:
+- find_customer('Asha Example') -> 1 row(s)
+    id=1, full_name=Asha Example, phone=****0101, email=a***********@example.test, tax_id=*********
+- verify_last4(1, '0101') -> 1 row(s)
+    matches=1
+
+##### CONTEXT FOR QUESTION 3 #####
+SYSTEM: You are a support agent. Answer using only the tool results.
+USER QUESTION: Why did Chen Demo's charge fail?
+TOOL RESULTS:
+- find_customer('Chen Demo') -> 1 row(s)
+    id=3, full_name=Chen Demo, phone=****0103, email=c********@example.test, tax_id=*********
+- list_orders(3) -> 2 row(s)
+    id=105, status=pending, total_amount=45.00, created_at=2026-10-02 11:05:00
+    id=106, status=delivered, total_amount=310.75, created_at=2026-09-28 18:30:00
+- payment_status(105) -> 1 row(s)
+    id=1005, order_id=105, method=upi, card_number=None, upi_id=c************, status=pending, order_status=pending
+- payment_status(106) -> 1 row(s)
+    id=1006, order_id=106, method=card, card_number=***********0005, upi_id=None, status=captured, order_status=delivered
+- ticket_notes(3) -> 1 row(s)
+    id=3, subject=Charge failed, please call back, notes=Customer typed: my card is 378282246310005 and you can reach me at chen.demo@example.test, please retry the charge.
+
+##### CONTEXT FOR QUESTION 4 #####
+SYSTEM: You are a support agent. Answer using only the tool results.
+USER QUESTION: What is the refund status of order 104?
+TOOL RESULTS:
+- payment_status(104) -> 1 row(s)
+    id=1004, order_id=104, method=card, card_number=************4444, upi_id=None, status=refunded, order_status=refunded

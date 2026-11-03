@@ -1,0 +1,2 @@
+DROP SCHEMA ddv_sec;
+SHOW WARNINGS;

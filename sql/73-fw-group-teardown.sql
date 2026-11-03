@@ -1,0 +1,10 @@
+CALL ddv_sec.sp_set_firewall_group_mode('fw_agent', 'RESET');
+SELECT * FROM performance_schema.firewall_groups;
+SELECT * FROM performance_schema.firewall_group_allowlist;
+CALL ddv_sec.sp_firewall_group_delist('fw_agent', 'ddv_agent@%');
+SELECT * FROM performance_schema.firewall_membership;
+CALL ddv_sec.sp_firewall_group_remove('fw_agent');
+SELECT * FROM performance_schema.firewall_groups;
+SELECT * FROM performance_schema.firewall_membership;
+REVOKE FIREWALL_ADMIN ON *.* FROM 'root'@'localhost';
+SHOW GRANTS FOR CURRENT_USER();

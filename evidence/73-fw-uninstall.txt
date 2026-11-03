@@ -1,0 +1,109 @@
+--------------
+# Copyright (c) 2025, 2026, Oracle and/or its affiliates.
+--------------
+
+Query OK, 0 rows affected (0.002 sec)
+
+--------------
+# This script uninstalls Enterprise Firewall component
+--------------
+
+Query OK, 0 rows affected (0.002 sec)
+
+--------------
+# and drops its tables and stored procedures.
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+#
+--------------
+
+Query OK, 0 rows affected (0.006 sec)
+
+--------------
+# NOTE: before running the script the following must be assured:
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+# 1) there is only a single connection (current)
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+# 2) the current database is @@component_firewall.database
+--------------
+
+Query OK, 0 rows affected (0.001 sec)
+
+--------------
+UNINSTALL COMPONENT 'file://component_firewall'
+--------------
+
+Query OK, 0 rows affected (0.670 sec)
+
+--------------
+DROP PROCEDURE sp_set_firewall_group_mode
+--------------
+
+Query OK, 0 rows affected (0.068 sec)
+
+--------------
+DROP PROCEDURE sp_set_firewall_group_mode_and_user
+--------------
+
+Query OK, 0 rows affected (0.070 sec)
+
+--------------
+DROP PROCEDURE sp_reload_firewall_group_rules
+--------------
+
+Query OK, 0 rows affected (0.052 sec)
+
+--------------
+DROP PROCEDURE sp_firewall_group_enlist
+--------------
+
+Query OK, 0 rows affected (0.058 sec)
+
+--------------
+DROP PROCEDURE sp_firewall_group_delist
+--------------
+
+Query OK, 0 rows affected (0.053 sec)
+
+--------------
+DROP PROCEDURE sp_firewall_group_rename
+--------------
+
+Query OK, 0 rows affected (0.051 sec)
+
+--------------
+DROP PROCEDURE sp_firewall_group_remove
+--------------
+
+Query OK, 0 rows affected (0.046 sec)
+
+--------------
+DROP TABLE firewall_group_allowlist
+--------------
+
+Query OK, 0 rows affected (0.153 sec)
+
+--------------
+DROP TABLE firewall_groups
+--------------
+
+Query OK, 0 rows affected (0.152 sec)
+
+--------------
+DROP TABLE firewall_membership
+--------------
+
+Query OK, 0 rows affected (0.237 sec)
+
+Bye

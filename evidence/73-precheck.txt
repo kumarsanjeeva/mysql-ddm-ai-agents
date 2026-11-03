@@ -1,0 +1,54 @@
+--------------
+SELECT ID, USER, HOST, COMMAND FROM information_schema.PROCESSLIST
+--------------
+
++-----+-----------------+-----------------+---------+
+| ID  | USER            | HOST            | COMMAND |
++-----+-----------------+-----------------+---------+
+| 220 | root            | localhost:60449 | Query   |
+|   7 | event_scheduler | localhost       | Daemon  |
++-----+-----------------+-----------------+---------+
+2 rows in set, 1 warning (0.016 sec)
+
+Warning (Code 1287): 'INFORMATION_SCHEMA.PROCESSLIST' is deprecated and will be removed in a future release. Please use performance_schema.processlist instead
+--------------
+SELECT * FROM performance_schema.firewall_groups
+--------------
+
++----------+------------+-------------+
+| NAME     | MODE       | USERHOST    |
++----------+------------+-------------+
+| fw_agent | PROTECTING | ddv_agent@% |
++----------+------------+-------------+
+1 row in set (0.002 sec)
+
+--------------
+SELECT * FROM performance_schema.firewall_membership
+--------------
+
++----------+-------------+
+| GROUP_ID | MEMBER_ID   |
++----------+-------------+
+| fw_agent | ddv_agent@% |
++----------+-------------+
+1 row in set (0.001 sec)
+
+--------------
+SELECT * FROM performance_schema.firewall_group_allowlist
+--------------
+
++----------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| NAME     | RULE                                                                                                                                                                                                                                                                               |
++----------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| fw_agent | SELECT @@SESSION . `sql_mode`                                                                                                                                                                                                                                                      |
+| fw_agent | SELECT RIGHT ( `phone` , ? ) = ? AS `matches` FROM `ddv_support` . `customers` WHERE `id` = ?                                                                                                                                                                                      |
+| fw_agent | SELECT `id` , STATUS , `total_amount` , `created_at` FROM `ddv_support` . `orders` WHERE `customer_id` = ? ORDER BY `id`                                                                                                                                                           |
+| fw_agent | SELECT `id` , SUBJECT , `notes` FROM `ddv_support` . `support_tickets` WHERE `customer_id` = ? ORDER BY `id`                                                                                                                                                                       |
+| fw_agent | SELECT `id` , `full_name` , `phone` , `email` , `tax_id` FROM `ddv_support` . `customers` WHERE `full_name` = ?                                                                                                                                                                    |
+| fw_agent | SELECT `p` . `id` , `p` . `order_id` , `p` . `method` , `p` . `card_number` , `p` . `upi_id` , `p` . `status` , `o` . `status` AS `order_status` FROM `ddv_support` . `payments` `p` JOIN `ddv_support` . `orders` `o` ON `o` . `id` = `p` . `order_id` WHERE `p` . `order_id` = ? |
+| fw_agent | SET @@SESSION . `autocommit` = OFF                                                                                                                                                                                                                                                 |
+| fw_agent | SET NAMES ? COLLATE ?                                                                                                                                                                                                                                                              |
++----------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+8 rows in set (0.002 sec)
+
+Bye
