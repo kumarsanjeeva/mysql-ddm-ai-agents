@@ -65,7 +65,7 @@ All are captured tests unless stated.
 - Tampering was stopped by ordinary privileges, not by masking. That is the point that database controls, privileges and masking are separate layers.
 - Roles carry no privileges here: SELECT is granted to each user directly, so roles act only as gatekeeper tokens. Least privilege through roles is not demonstrated.
 - "Fails closed" holds for this policy design, where the mask is the ELSE branch. A policy written the other way round is not tested.
-- Only two inference attempts and four tampering statements were run. Aggregates, joins, subqueries, stored routines and `INSERT ... SELECT` are not tested.
+- Joins, stored routines, `INSERT ... SELECT` and views were tested later: see F21 to F42.
 - The root gatekeeper result says nothing about root's power. Root created and dropped policies earlier.
 - The agent is scripted, with no LLM. Question 3 rests on ticket text, and no payment in the seed is "failed".
 - Seed note: ticket 3 originally quoted another customer's card; fixed in `sql/20-fix-ticket-card.sql` (evidence/20-fix-ticket-card.txt).
@@ -82,20 +82,22 @@ All are captured tests unless stated.
 - (a) Driver: mysql-connector-python 26.10.0, GPLv2 with FOSS exception, installed by Claude Code at the author's request. Exchange: Claude Code reported that no MySQL driver was installed and asked "Which should I install? `mysql-connector-python` (Oracle's driver) or `pymysql` (pure Python)"; the author replied "install mysql-connector-python". `pip show` reported Version: 26.10.0, Author: Oracle and/or its affiliates, License: GNU GPLv2 (with FOSS License Exception). The install output said "Using cached mysql_connector_python-26.10.0-cp313-cp313-win_amd64.whl" and did not name the package index. (live observation, not in repo evidence)
 - (b) evidence/22-context-scan.txt was saved through PowerShell redirection and begins with a UTF-8 BOM. agent/scan_context.py reproduces it apart from the BOM and line endings.
 - (c) The Step 1 and 2 files were first committed with CRLF converted to LF because core.autocrlf=true and .gitattributes did not exist yet. Commit 3054d77 re-stored them as captured. A fresh clone verifies all three reports (10, 33 and 47 hashes, 0 mismatches).
+- (d) FIREWALL_ADMIN was granted to root@localhost for the Firewall test and revoked afterwards. (F46; 53-firewall-uninstall.txt)
+- (e) The Audit install script was run against `ddv_sec`, while the manual's example uses `-D mysql`, so the Audit failure (F54 to F56) may come from that choice.
+- (f) CREATE TABLE printed warnings during the Audit attempt (1 and 2) that were not captured. (not captured)
+- (g) The Firewall install script's `CREATE TABLE IF NOT EXISTS firewall_group_allowlist` also printed "2 warnings" whose text was not captured. (53-firewall-install.txt)
 
-(see section 7 for what was not tested)
 ## 7. Not tested
 
-- MySQL Enterprise Audit.
-- MySQL Enterprise Firewall.
+- MySQL Enterprise Audit: the install failed (F54 to F57), so no filter, no logging and no log read-back.
 - Encryption.
 - MySQL REST Service.
-- A real LLM run.
-- Whether `ALTER TABLE ... MODIFY COLUMN` without a `MASKING POLICY` clause strips masking for a user who holds ALTER.
-- Whether `LENGTH`, `LEFT`, `ORDER BY`, `GROUP BY` and aggregates run on masked or real values.
-- DEFINER views and routines.
-- `INSERT ... SELECT` into a writable table.
-- Column-level grants.
+- A real LLM run (the agent is scripted).
+- Whether `ALTER TABLE ... MODIFY COLUMN` without a `MASKING POLICY` clause strips masking for an account holding ALTER.
+- Enumeration of customers through an allowed Firewall shape.
+- Firewall DETECTING mode.
+- Other clients' session statements under the Firewall.
+- Aggregates and subqueries beyond F21 to F26.
 
 ## 8. Review of unexpected-query evidence
 
@@ -125,7 +127,12 @@ Avoid:
 - "cannot be bypassed"
 - "fails closed" without the policy-design condition
 - "protects emails" for the demo mask
-- any claim about Audit or Firewall
+- any claim about Audit, and any Firewall claim beyond F45 to F53
+
+Safe wording for Audit and Firewall:
+
+- "for this account and this workflow"
+- "in these runs"
 
 ## 10. Evidence index
 
@@ -198,13 +205,13 @@ Added after the earlier sections; earlier entries are unchanged. All are capture
 - **F28.** (captured) The agent's INSERT ... SELECT into an unmasked table stored masked values. Billing had no grant on that sink. (34-copy-out.txt)
 - **F29.** (captured) With SELECT (id, email, phone), SELECT notes gave 1143 and SELECT * gave 1142. (35-column-grant.txt)
 - **F30.** (captured) Audit and Firewall are not installed. DLLs and install scripts exist. Before Step 4b only the plugin-style scripts had been read. (36-audit-firewall-check.txt, 36-share-plugin-listing.txt)
-- **F31.** (captured) ddv_owner (role _billing_admin as default role, SELECT on the table) selecting probe_people in ddv_probe2 returned real email, phone and notes. (41-owner-select.txt, 41-setup-root.txt)
+- **F31.** (captured) ddv_owner (holding role r_billing_admin as default role, SELECT on the table) selecting probe_people in ddv_probe2 returned real email, phone and notes. (41-owner-select.txt, 41-setup-root.txt)
 - **F32.** (captured) The agent's first CALL p_owner() failed with ERROR 1370 (execute command denied to user 'ddv_owner'@'%' for routine 'ddv_probe2.p_owner'). The EXECUTE grant to ddv_owner was added afterwards and the whole agent file was re-run. Both captures are kept. (41-agent-select.txt, 41-owner-execute-grant.txt, 41-agent-select-rerun.txt)
-- **F33.** (captured) With definer ddv_owner, _owner_definer returned real email, phone and notes to the agent, who held only SELECT (id, email, phone) on the base table and SELECT on the view. After the EXECUTE grant, CALL p_owner() also returned real values. (41-agent-select.txt, 41-agent-select-rerun.txt)
+- **F33.** (captured) With definer ddv_owner, v_owner_definer returned real email, phone and notes to the agent, who held only SELECT (id, email, phone) on the base table and SELECT on the view. After the EXECUTE grant, CALL p_owner() also returned real values. (41-agent-select.txt, 41-agent-select-rerun.txt)
 - **F34.** (captured) As the agent, SELECT notes FROM probe_people gave ERROR 1143 and SELECT notes FROM v_owner_definer returned the three notes, in both captures. (41-agent-select.txt, 41-agent-select-rerun.txt)
 - **F35.** (captured) Copy-out chain in ddv_probe2: the agent's INSERT ... SELECT stored masked values in probe_sink; billing then read the masked values, deleted the 3 rows and inserted from the base table; the agent's next SELECT * FROM probe_sink returned real values. (42-copy-out-1-agent-insert.txt to 42-copy-out-5-agent-select.txt)
 - **F36.** (captured) ALTER TABLE probe_idx MODIFY COLUMN code ... MASKING POLICY probe_mask_phone on an indexed column gave ERROR 6572 Column 'code' cannot have a MASKING POLICY and have an index. CREATE INDEX idx_phone ON probe_people (phone) on a masked column gave ERROR 6572 Column 'phone' cannot have a MASKING POLICY and have an index. (43-indexed-columns.txt)
-- **F37.** (captured script text) The audit component install script creates tables udit_log_filter and udit_log_user and runs INSTALL COMPONENT "file://component_audit_log"; its uninstall script uninstalls the component and drops both tables. The first 80 lines of the firewall component script create irewall_group_allowlist, irewall_groups and irewall_membership, run INSTALL COMPONENT 'file://component_firewall' SET PERSIST component_firewall.database = DATABASE() and start creating stored procedures. Nothing was run. (45-component-scripts.txt)
+- **F37.** (captured script text) The audit component install script creates tables audit_log_filter and audit_log_user and runs INSTALL COMPONENT "file://component_audit_log"; its uninstall script uninstalls the component and drops both tables. The first 80 lines of the firewall component script create firewall_group_allowlist, firewall_groups and firewall_membership, run INSTALL COMPONENT 'file://component_firewall' SET PERSIST component_firewall.database = DATABASE() and start creating stored procedures. Nothing was run. (45-component-scripts.txt)
 - **F38.** (captured) After cleanup, ddv_probe2, its policies and ddv_owner are gone; the before and after snapshots compare equal after stripping timings. (46-cleanup.txt, 47-after.txt, 48-compare.txt)
 
 Limits added: three rows and each result seen once. Masking changes sorting, grouping, distinct counts and joins (reasoning, for what that means to an agent). A column grant on the base table does not cover views (reasoning).
@@ -327,13 +334,13 @@ Files in sql/, agent/ and evidence/ not listed in earlier index sections. Step =
 
 Added after earlier sections; earlier entries unchanged. All captured. Files are in evidence/ (53-*).
 
-- **F45.** (captured) The component install script ran against schema `ddv_sec` with exit code 0 and no ERROR lines. Afterwards `mysql.component` listed `file://component_firewall`; `component_firewall.database` was `ddv_sec` and `component_firewall.enabled` ON; `ddv_sec` held tables `firewall_group_allowlist`, `firewall_groups`, `firewall_membership` and 7 procedures; `performance_schema.persisted_variables` gained `component_firewall.database = ddv_sec`. (53-firewall-install.txt, 53-firewall-state.txt)
+- **F45.** (captured) The component install script ran against schema `ddv_sec`; the captured output has no ERROR lines (the exit code is not in the capture). Afterwards `mysql.component` listed `file://component_firewall`; `component_firewall.database` was `ddv_sec` and `component_firewall.enabled` ON; `ddv_sec` held tables `firewall_group_allowlist`, `firewall_groups`, `firewall_membership` and 7 procedures; `performance_schema.persisted_variables` gained `component_firewall.database = ddv_sec`. (53-firewall-install.txt, 53-firewall-state.txt)
 - **F46.** (captured) Root's `SHOW GRANTS` listed FIREWALL_EXEMPT but not FIREWALL_ADMIN. FIREWALL_ADMIN was granted to root@localhost for the test. (53-firewall-state.txt, 53-firewall-recording.txt)
 - **F47.** (captured) `sp_set_firewall_group_mode_and_user('fw_agent', 'RECORDING', 'ddv_agent@%')` created the group with USERHOST `ddv_agent@%` and an empty `firewall_membership`; `sp_firewall_group_enlist` then added the membership row. (53-firewall-recording.txt, 53-firewall-enlist.txt)
 - **F48.** (captured) Recording the four scripted questions gave 8 allowlist rules with literals replaced by `?`, including `SET NAMES ? COLLATE ?`, ``SET @@SESSION . `autocommit` = OFF`` and ``SELECT @@SESSION . `sql_mode` ``. (53-firewall-recording-run.txt, 53-firewall-allowlist.txt)
-- **F49.** (captured) In PROTECTING mode the four scripted questions ran again. `SELECT * FROM ddv_support.customers`, `SELECT * FROM ddv_support.payments`, `SELECT full_name FROM ddv_support.customers WHERE email LIKE 'a%'`, `SELECT * FROM ddv_support.support_tickets` and `SELECT 1`, each in its own run as `ddv_agent`, returned `ERROR 6444 (28000): Access denied.` Afterwards `firewall_access_denied` was 10 and `firewall_access_granted` 28. The manual tutorial quotes `ERROR 1045 (28000): Statement was blocked by Firewall`. (53-firewall-protecting.txt, 53-firewall-protecting-status.txt)
+- **F49.** (captured) In PROTECTING mode the four scripted questions ran again and returned data (the run output is in 53-firewall-protecting.txt). Five other statements, each in its own run as `ddv_agent`, returned `ERROR 6444 (28000) at line 1: Access denied.`: `SELECT * FROM ddv_support.customers`, `SELECT * FROM ddv_support.payments`, `SELECT full_name FROM ddv_support.customers WHERE email LIKE 'a%'`, `SELECT * FROM ddv_support.support_tickets` and `SELECT 1`. Afterwards `firewall_access_denied` was 10 and `firewall_access_granted` 28; the capture does not explain why the denied counter is 10 for five visible denials. The manual tutorial quotes `ERROR 1045 (28000): Statement was blocked by Firewall`. (53-firewall-protecting.txt, 53-firewall-protecting-status.txt)
 - **F50.** (captured) `SELECT COUNT(*) FROM ddv_support.customers` returned 6 for `ddv_billing` and for root while the group was in PROTECTING mode. (53-firewall-others.txt)
-- **F51.** (captured) `RESET` set the group mode to OFF and emptied the allowlist; `sp_firewall_group_remove` removed the group. The uninstall script ran against `ddv_sec` with exit code 0; `ddv_sec` was dropped. The persisted `component_firewall.database` entry remained until `RESET PERSIST component_firewall.database`; afterwards only `log_bin_trust_function_creators` remained. (53-firewall-uninstall.txt)
+- **F51.** (captured) `RESET` set the group mode to OFF and emptied the allowlist; `sp_firewall_group_remove` removed the group. The uninstall script ran against `ddv_sec` (exit code not captured); `ddv_sec` was dropped. The persisted `component_firewall.database` entry remained until `RESET PERSIST component_firewall.database`; afterwards only `log_bin_trust_function_creators` remained. (53-firewall-uninstall.txt)
 - **F52.** (captured) The after snapshot compares equal to the baseline once timings are stripped. (53-after.txt, 53-compare.txt)
 - **F53.** (captured) `agent/support_agent_fw.py` differs from `agent/support_agent.py` only in `CONTEXT_FILE`; its final console line still says `evidence/21-llm-context.txt` (hard-coded text) while the file written was `evidence/53-fw-llm-context.txt`. The hash of `evidence/21-llm-context.txt` is unchanged. (53-firewall-recording-run.txt)
 
@@ -398,3 +405,26 @@ Files in sql/, agent/ and evidence/ not listed in earlier index sections. Step =
 | sql/54-audit-state.sql | Step 5 Audit attempt | 0fbfb28480d97a4cd0fd3471d370141dcc0593ed33b53e3e31ec91ff0a0cd3af |
 | sql/54-drop-schema.sql | Step 5 Audit attempt | 94678d76ff2eeb93d7b3f9ed15288edba03a1d6c57f19b9f846716988d8a8430 |
 | sql/54-error-log.sql | Step 5 Audit attempt | 2bd265848fe5f57d36d362b84c570b6055750341cd3d1c9f2243e379c72b4c83 |
+
+## 19. Manual notes (relayed by web-fetch subagents, open the page before quoting)
+
+Label: manual-documented, not tested here. Short phrases only; the pages are under https://dev.mysql.com/doc/refman/9.7/en/ and were fetched 2026-11-03.
+
+- `CURRENT_ROLE_IN` checks active roles. (gatekeeper-functions.html)
+- Masking usage: for a view, stored function or procedure with SQL SECURITY INVOKER, "the privileges of the invoking user are considered". DEFINER is not documented there. (data-masking-policy-usage.html)
+- Stored-objects security: for DEFINER routines the server sets "only the default roles" for the definer account, unless `activate_all_roles_on_login` is enabled. Note: this page concerns routines and does not mention masking. (stored-objects-security.html)
+- Firewall component: the plugin is deprecated; the install script persists `component_firewall.database`; uninstall needs no other connections ("a single connection"); the manual tutorial shows ERROR 1045 "Statement was blocked by Firewall", while the captured denial was ERROR 6444 (F49). (firewall.html, firewall-component.html)
+- Audit component: no filter is assigned by default, so nothing is logged; `audit_log.database` defaults to `mysql` and is read only; the install example uses `-D mysql`; audit-log.html covers the deprecated plugin, not the component. (audit-log-component-installation.html, audit-log-component-filtering.html, audit-log-component-reference.html)
+
+## 20. Conclusions from captured tests (reasoning)
+
+Inferences from the captured findings named in each bullet. Not tested beyond those runs.
+
+- Views and routines that agents can reach should not be owned by an account with an active unmasking role. (F39 to F42)
+- A shared writable table is a leak path. (F35)
+- Masked columns can't be indexed. (F36)
+- Masking changes sorting, grouping, distinct counts and joins, so give agents surrogate ids. (F21 to F23)
+- The Firewall allowlist holds statement shapes with `?` for values. (F48)
+- In-workflow shapes still return free text. (F8; question 3 in 53-firewall-protecting.txt)
+- Client session statements must be recorded. (F48)
+- A persisted setting remained after uninstall. (F51)
