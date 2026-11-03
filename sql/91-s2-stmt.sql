@@ -1,0 +1,4 @@
+SELECT CURRENT_USER(), CURRENT_ROLE();
+ALTER TABLE probe_alter MODIFY COLUMN phone VARCHAR(20) MASKING POLICY probe5_mask_phone;
+SHOW CREATE TABLE probe_alter;
+SELECT * FROM probe_alter;

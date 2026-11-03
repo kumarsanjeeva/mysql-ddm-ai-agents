@@ -1,0 +1,49 @@
+--------------
+SELECT * FROM mysql.component
+--------------
+
++--------------+--------------------+------------------------------------+
+| component_id | component_group_id | component_urn                      |
++--------------+--------------------+------------------------------------+
+|            1 |                  1 | file://component_masking           |
+|            2 |                  2 | file://component_masking_functions |
+|            3 |                  3 | file://component_object_policy     |
++--------------+--------------------+------------------------------------+
+3 rows in set (0.032 sec)
+
+--------------
+SHOW TABLES FROM mysql LIKE 'audit%'
+--------------
+
+Empty set (0.039 sec)
+
+--------------
+SHOW VARIABLES LIKE 'audit_log%'
+--------------
+
+Empty set (0.065 sec)
+
+--------------
+SELECT * FROM performance_schema.persisted_variables
+--------------
+
++---------------------------------+----------------+
+| VARIABLE_NAME                   | VARIABLE_VALUE |
++---------------------------------+----------------+
+| log_bin_trust_function_creators | ON             |
++---------------------------------+----------------+
+1 row in set (0.009 sec)
+
+--------------
+SELECT ID, USER, HOST, COMMAND FROM information_schema.PROCESSLIST
+--------------
+
++-----+-----------------+-----------------+---------+
+| ID  | USER            | HOST            | COMMAND |
++-----+-----------------+-----------------+---------+
+| 404 | root            | localhost:53065 | Query   |
+|   7 | event_scheduler | localhost       | Daemon  |
++-----+-----------------+-----------------+---------+
+2 rows in set, 1 warning (0.016 sec)
+
+Bye

@@ -1,0 +1,55 @@
+--------------
+REVOKE SELECT, INSERT, UPDATE, ALTER ON ddv_probe5.probe_alter FROM 'ddv_alterer2'@'%'
+--------------
+
+Query OK, 0 rows affected (0.105 sec)
+
+--------------
+DROP SCHEMA IF EXISTS ddv_probe5
+--------------
+
+Query OK, 1 row affected (0.312 sec)
+
+--------------
+DROP MASKING POLICY IF EXISTS probe5_mask_phone
+--------------
+
+Query OK, 0 rows affected (0.037 sec)
+
+--------------
+DROP MASKING POLICY IF EXISTS probe5_open
+--------------
+
+Query OK, 0 rows affected (0.101 sec)
+
+--------------
+DROP MASKING POLICY IF EXISTS probe5_try
+--------------
+
+Query OK, 0 rows affected, 1 warning (0.090 sec)
+
+--------------
+DROP USER IF EXISTS 'ddv_alterer2'@'%'
+--------------
+
+Query OK, 0 rows affected (0.195 sec)
+
+--------------
+SELECT policy_name FROM mysql.column_masking_policies WHERE policy_name LIKE 'probe5%'
+--------------
+
+Empty set (0.009 sec)
+
+--------------
+SHOW DATABASES LIKE 'ddv_probe5'
+--------------
+
+Empty set (0.047 sec)
+
+--------------
+SELECT user FROM mysql.user WHERE user LIKE 'ddv_alterer%'
+--------------
+
+Empty set (0.015 sec)
+
+Bye

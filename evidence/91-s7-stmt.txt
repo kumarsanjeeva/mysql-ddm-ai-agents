@@ -1,0 +1,33 @@
+--------------
+SELECT CURRENT_USER()
+--------------
+
++----------------+
+| CURRENT_USER() |
++----------------+
+| ddv_agent@%    |
++----------------+
+1 row in set (0.004 sec)
+
+--------------
+ALTER TABLE ddv_probe5.probe_alter MODIFY COLUMN phone VARCHAR(20)
+--------------
+
+ERROR 1142 (42000) at line 2: ALTER command denied to user 'ddv_agent'@'localhost' for table 'probe_alter'
+--------------
+SHOW GRANTS
+--------------
+
++--------------------------------------------------------------------+
+| Grants for ddv_agent@%                                             |
++--------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `ddv_agent`@`%`                              |
+| GRANT SELECT ON `ddv_support`.`customers` TO `ddv_agent`@`%`       |
+| GRANT SELECT ON `ddv_support`.`orders` TO `ddv_agent`@`%`          |
+| GRANT SELECT ON `ddv_support`.`payments` TO `ddv_agent`@`%`        |
+| GRANT SELECT ON `ddv_support`.`support_tickets` TO `ddv_agent`@`%` |
+| GRANT `r_support_agent`@`%` TO `ddv_agent`@`%`                     |
++--------------------------------------------------------------------+
+6 rows in set (0.003 sec)
+
+Bye

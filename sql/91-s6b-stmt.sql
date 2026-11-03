@@ -1,0 +1,4 @@
+SELECT CURRENT_USER(), CURRENT_ROLE();
+DROP MASKING POLICY probe5_mask_phone;
+SHOW CREATE TABLE probe_alter;
+SELECT * FROM probe_alter;

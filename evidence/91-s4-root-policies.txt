@@ -1,0 +1,13 @@
+--------------
+SELECT policy_name FROM mysql.column_masking_policies WHERE policy_name LIKE 'probe5%'
+--------------
+
++-------------------+
+| policy_name       |
++-------------------+
+| probe5_mask_phone |
+| probe5_open       |
++-------------------+
+2 rows in set (0.032 sec)
+
+Bye

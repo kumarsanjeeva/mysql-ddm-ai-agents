@@ -99,6 +99,8 @@ Still not tested after Step 8 (the items tested in Steps 5 to 8 are F45 to F53 a
 - A real LLM run (the agent is scripted).
 - The audit log file in the Data folder (access was denied in Step 6; not checked unless the author supplies it).
 - Masking-policy changes while the Firewall is PROTECTING.
+- After Step 8b (F93 onward): `ALTER TABLE ... ALTER COLUMN ... DROP MASKING POLICY` by an account with only ALTER; dropping a column that carries a policy; ALTER by an account without SELECT; reads of a column under `probe5_open` by accounts other than `ddv_alterer2`; the CREATE/DROP MASKING POLICY privilege split beyond the two ERROR 1227 runs in F99.
+- Masking-policy changes while the Firewall is PROTECTING.
 
 ## 8. Review of unexpected-query evidence
 
@@ -500,12 +502,12 @@ Added after earlier sections; earlier entries unchanged. All captured unless sta
 - **F68.** (captured) For each of the five out-of-workflow selects and each of the four tampering statements, run on its own, `firewall_access_denied` rose by 2 (0 to 18 over nine runs) and `firewall_access_granted` stayed 14. (71-stack-ow1-status-before.txt to 71-stack-tamp4-status-after.txt)
 - **F69.** (captured) The Audit log of the run holds 137 events: 1 server startup (root) and 136 from `ddv_agent`, with 12 connects, 12 disconnects, 30 table_access reads and 82 general/status events. `audit_log.events_written` was 137. (72-stack-audit-extract.txt, 73-audit-remove.txt)
 - **F70.** (captured) Firewall-denied statements appear in the Audit log as general/status events with status 6444, including `select @@version_comment limit 1` (the client's own first statement) in every denied run, and the four tampering statements (sql commands alter_table, drop_masking_policy, create_table, create_view). The denied selects have no table_access event. `select $$` appears with status 1064 in every client run. (72-stack-audit-extract.txt)
-- **F71.** (captured, reasoning for the cause) The two denials per run counted in F68 match the two status 6444 events per run in F70; the same pattern would explain the Step 5 counter of 10 for 5 visible errors (F49), whose files show each statement once. (53-firewall-protecting.txt, 72-stack-audit-extract.txt)
+- **F71.** (captured for the counts; the cause is not established; softened after Step 8b) A rise of 2 in `firewall_access_denied` per denied run is captured for Step 7 (F68) and matches the two status 6444 events per run in F70; the Step 5 counter of 10 for 5 visible errors (F49) fits the same count; and the +2 counters per run in DETECTING mode (F88) were captured in Step 8. The OR-injection run in 82-inject-or-status-before.txt and 82-inject-or-status-after.txt shows +3 denied (3 to 6) and the file holds three ERROR 6444 lines, not +2. The cause of the extra denial is unexplained. (53-firewall-protecting.txt, 72-stack-audit-extract.txt, 82-inject-or.txt, 82-inject-or-status-before.txt, 82-inject-or-status-after.txt)
 - **F72.** (captured) The tampering statements were denied with status 6444 by the Firewall, where without it they were denied by privileges with 1142 and 1227 (F11, 24-tampering.txt). The ERROR lines are not in the 71-stack files (stderr was not redirected); the status is in 72-stack-audit-extract.txt. The status shows which control refused each statement. That the Firewall check runs before the privilege check is reasoning: Step 3 shows the same statements were also denied by privileges. (71-stack-tamp1.txt to 71-stack-tamp4.txt, 72-stack-audit-extract.txt)
 - **F73.** (captured) Teardown ran in this order without errors: group RESET, delist, remove; FIREWALL_ADMIN revoked; Audit user assignment and filter removed (both OK); Firewall uninstall script on `ddv_sec`; `RESET PERSIST component_firewall.database`; Audit uninstall script on `mysql`; `DROP SCHEMA ddv_sec`. Only root and the event scheduler were connected before it. root's grants no longer list FIREWALL_ADMIN. (73-precheck.txt, 73-fw-group-teardown.txt, 73-audit-remove.txt, 73-fw-uninstall.txt, 73-reset-persist.txt, 73-audit-uninstall.txt, 73-drop-schema.txt, 73-grants-check.txt)
 - **F74.** (captured) The after snapshot equals the baseline except for the processlist row of the capturing session (connection id and port). (70-baseline.txt, 73-after.txt, 73-compare.txt)
 - **F75.** (captured) The raw Audit JSON held a local path, the machine name and the OS user name; it is not in the repo. The extract scan found 0 forbidden terms, 0 passwords and 0 paths. No statement containing a password was run while Audit was loaded. (72-stack-audit-extract.txt)
-- **F76.** (not tested, remaining after Step 8; the earlier list was shortened because F77 onward test the rest) Encryption; MySQL REST Service; Audit rotation, pruning, compression and encryption; persistence across a server restart; a real LLM run; the audit log file in the Data folder (access denied in Step 6, not checked); masking-policy changes while the Firewall is PROTECTING.
+- **F76.** (not tested, remaining after Step 8; the earlier list was shortened because F77 onward test the rest) Encryption; MySQL REST Service; Audit rotation, pruning, compression and encryption; persistence across a server restart; a real LLM run; the audit log file in the Data folder (access denied in Step 6, not checked); masking-policy changes while the Firewall is PROTECTING; and, after Step 8b, `ALTER COLUMN ... DROP MASKING POLICY` by an ALTER-only account, dropping a column that carries a policy, ALTER by an account without SELECT, and reads under `probe5_open` by other accounts (see section 7).
 
 ## 24. Evidence index additions (Step 7)
 
@@ -583,7 +585,7 @@ Files in sql/, agent/ and evidence/ not listed in earlier index sections. Step =
 Added after earlier sections; earlier entries unchanged except F76 and section 7, which now list only what is still not tested. All captured unless stated. Files are in evidence/ (80-* to 84-*).
 
 - **F77.** (captured) `ddv_alterer` held only SELECT, INSERT, UPDATE and ALTER on `ddv_probe4.probe_alter` (no roles, no MANAGE_DATA_MASKING_POLICY). `ALTER TABLE probe_alter MODIFY COLUMN phone VARCHAR(20)` (no MASKING POLICY clause) succeeded; SHOW CREATE TABLE then showed `phone` without the policy and SELECT returned the real phone values. The manual says omitting the clause removes the policy (`.local` notes, manual-documented). (80-a-setup-root.txt, 80-a1-stmt.txt, 80-a1-after.txt)
-- **F78.** (captured) After root re-attached the policy (80-a2-root-reattach.txt), `ddv_alterer` ran `ALTER TABLE probe_alter MODIFY COLUMN phone VARCHAR(20) MASKING POLICY probe4_mask_phone` without error and without MANAGE_DATA_MASKING_POLICY; SHOW CREATE TABLE showed the policy and SELECT returned masked phones. (80-a3-stmt.txt, 80-a3-after.txt)
+- **F78.** (captured; reworded after Step 8b) The statement `ALTER TABLE probe_alter MODIFY COLUMN phone VARCHAR(20) MASKING POLICY probe4_mask_phone` ran without error in 80-a3-stmt.txt, through the `ddv_alterer` client configuration, an account without MANAGE_DATA_MASKING_POLICY. It ran on a column that already carried the policy, because root had re-attached it in 80-a2-root-reattach.txt. The Step 8 statement files do not print `CURRENT_USER()`. This entry therefore does not show that `ddv_alterer` attached a policy to a column that did not carry one. The clean test, with `CURRENT_USER()` printed and a column without the policy, is in the 91-* files (F93 onward). (80-a2-root-reattach.txt, 80-a3-stmt.txt, 80-a3-after.txt)
 - **F79.** (captured) With the policy attached, `ddv_alterer` added `phone_copy` (no policy), ran `UPDATE probe_alter SET phone_copy = phone` (3 rows) and SELECT returned masked text in both columns. (80-a4a-stmt.txt, 80-a4b-stmt.txt, 80-a4c-stmt.txt, 80-a4-after.txt)
 - **F80.** (captured) `ALTER TABLE probe_alter CHANGE COLUMN phone phone2 VARCHAR(20)` by `ddv_alterer` succeeded; `phone2` showed no policy and SELECT returned real values. Root restored the table after steps 4 and 5. (80-a5-stmt.txt, 80-a5-after.txt, 80-a4-root-restore.txt, 80-a5-root-restore.txt)
 - **F81.** (captured) On three rows, `COUNT(DISTINCT email)` and `COUNT(DISTINCT phone)` were 2 and 2 for `ddv_agent` and 3 and 3 for `ddv_billing`. `GROUP BY phone` gave 2 groups (1,2 and 3) for the agent and 3 for billing, each with 1 warning. `WHERE phone IN (SELECT phone ... WHERE id = 1)` returned ids 1,2 for the agent and id 1 for billing. (81-agent-01.txt to 81-billing-03.txt)
@@ -769,3 +771,61 @@ Files in sql/, agent/ and evidence/ not listed in earlier index sections. Step =
 | sql/83-root-filter.sql | Step 8 | 972775335c28d877fe4ded6e50bf6e3fa342582df1855d06c998e8f9b14d7f07 |
 | sql/83-root-unassign.sql | Step 8 | 1686b8603979cf6fb67f05aa7f605b432fdbedfc78301a9be5573264b86ddb31 |
 | sql/84-cleanup.sql | Step 8 | acad1ab9021719e43f65e075b2e0d06617691d3692b30b210cffcf6d29a6a036 |
+
+## 27. Step 8b findings (F93 onward)
+
+Added after Step 8. Every entry below comes from the 90-*, 91-* and 92-* files only. In these runs `SELECT CURRENT_USER(), CURRENT_ROLE();` is the first statement, so the account is printed in each file. Schema `ddv_probe5`, user `ddv_alterer2`, policies `probe5_*`. All captured. No Firewall, no Audit.
+
+- **F93.** (captured) Setup as root: `probe5_mask_phone` was created and attached to `phone`; `probe5_open` (`CASE WHEN CURRENT_USER_IN('nobody@nowhere') THEN phone_column ELSE phone_column END`) was created without error. `ddv_alterer2` held `GRANT SELECT, INSERT, UPDATE, ALTER ON ddv_probe5.probe_alter` and nothing else; `ddv_agent` held no grant on `ddv_probe5`. The creation of `ddv_alterer2` ran with the client echo off and is not in the evidence; the template is sql/90-create-alterer2.template.sql. (90-setup-1-root.txt, 90-setup-2-open-root.txt, 90-grants-root.txt)
+- **F94.** (captured) S1: `CURRENT_USER()` printed `ddv_alterer2@%` and `CURRENT_ROLE()` printed NONE. `ALTER TABLE probe_alter MODIFY COLUMN phone VARCHAR(20);` ran without error. SHOW CREATE TABLE showed `phone` without a policy; SELECT returned `555-0101`, `777-0101`, `555-0303`. Root's policy list still held `probe5_mask_phone` and `probe5_open`. (91-s1-stmt.txt, 91-s1-root-policies.txt)
+- **F95.** (captured) S2, with no root restore after S1: as `ddv_alterer2@%` (no role), `ALTER TABLE probe_alter MODIFY COLUMN phone VARCHAR(20) MASKING POLICY probe5_mask_phone;` ran without error on the column that carried no policy. SHOW CREATE TABLE showed `MASKING POLICY probe5_mask_phone`; SELECT returned `****0101`, `****0101`, `****0303`. (91-s2-stmt.txt, 91-s2-root-policies.txt)
+- **F96.** (captured) S3: the statement without the clause ran again as `ddv_alterer2@%`; SHOW CREATE TABLE showed no policy and SELECT returned the real phones. (91-s3-stmt.txt, 91-s3-root-policies.txt)
+- **F97.** (captured) S4: `... MASKING POLICY probe5_open;` ran without error as `ddv_alterer2@%`. SHOW CREATE TABLE showed `MASKING POLICY probe5_open`; SELECT returned the real phones. (91-s4-stmt.txt, 91-s4-root-policies.txt)
+- **F98.** (captured) S5: with `probe5_open` attached, `... MASKING POLICY probe5_mask_phone;` ran without error as `ddv_alterer2@%`. SHOW CREATE TABLE showed `probe5_mask_phone`; SELECT returned `****0101`, `****0101`, `****0303`. (91-s5-stmt.txt, 91-s5-root-policies.txt)
+- **F99.** (captured) S6, two runs as `ddv_alterer2@%`: `CREATE MASKING POLICY probe5_try(c) ...` returned `ERROR 1227 (42000) at line 2: Access denied; you need (at least one of) the MANAGE_DATA_MASKING_POLICY privilege(s) for this operation`. `DROP MASKING POLICY probe5_mask_phone;` returned the same error text. After each run root's policy list held `probe5_mask_phone` and `probe5_open` and no `probe5_try`. SELECT in both files returned masked phones. (91-s6a-stmt.txt, 91-s6a-root-policies.txt, 91-s6b-stmt.txt, 91-s6b-root-policies.txt)
+- **F100.** (captured) S7 control: `CURRENT_USER()` printed `ddv_agent@%`. `ALTER TABLE ddv_probe5.probe_alter MODIFY COLUMN phone VARCHAR(20);` returned `ERROR 1142 (42000) at line 2: ALTER command denied to user 'ddv_agent'@'localhost' for table 'probe_alter'`. SHOW GRANTS listed no grant on `ddv_probe5`. Root's policy list was unchanged. (91-s7-stmt.txt, 91-s7-root-policies.txt)
+- **F101.** (captured) Cleanup revoked the four grants, dropped `ddv_probe5`, ran `DROP MASKING POLICY IF EXISTS` for `probe5_mask_phone`, `probe5_open` and `probe5_try` (the statement for `probe5_try` returned 1 warning, text not captured) and dropped `ddv_alterer2`. Root's policy list, the schema list and the user list were empty afterwards. The after snapshot equals 90-baseline.txt except the processlist row of the capturing session. (92-cleanup.txt, 92-after.txt, 92-compare.txt, 90-baseline.txt)
+
+## 28. Evidence index additions (Step 8b)
+
+Files in sql/ and evidence/ not listed in earlier index sections. Step = Step 8b. REPORT-12.md is not listed here (its hash is in the commit and in .local/MORNING.md).
+
+| File | Step | SHA-256 |
+|---|---|---|
+| evidence/90-baseline.txt | Step 8b | 62623ca31315ee782b4c0146db1e2e867303931b0ba80fb193b790d2a7fe726a |
+| evidence/90-grants-root.txt | Step 8b | 685630efab75e0f64c9ac86e5df6f9805644a46a52b2842215ee7af079af19d6 |
+| evidence/90-setup-1-root.txt | Step 8b | 99aca799127d96455f00e31665b0a2b908e86bcb44f6d2dae020c22476cad983 |
+| evidence/90-setup-2-open-root.txt | Step 8b | ce8c75d9662775fa457236d3ce9ebca053bdd62965c1fa7ff01e636b473e435f |
+| evidence/91-s1-root-policies.txt | Step 8b | 8d8331ada57bc7891aa00852b48c7389f0b09b86afa70b060a6a981274865701 |
+| evidence/91-s1-stmt.txt | Step 8b | e7c6c79c5d640e8662eefd94a673560fc316ce76dcb4cecfdd2ef7938e11e2d9 |
+| evidence/91-s2-root-policies.txt | Step 8b | 0f0687b00411b7a9dc3303088d1115091f24237e88eac79aedf40bf0947e8846 |
+| evidence/91-s2-stmt.txt | Step 8b | e8a27cee3656c362698476e377abf2e0ac07893508eaa645a17d7a5d043a1161 |
+| evidence/91-s3-root-policies.txt | Step 8b | 4e8d0a2502b2e7b253cc56fbc7f727f6a3481d4fe104940fcf0f161e470a58d5 |
+| evidence/91-s3-stmt.txt | Step 8b | 56d16930b3f9c6ffc6595274e1e82f0a752855f34be25c33679accf4e3666f00 |
+| evidence/91-s4-root-policies.txt | Step 8b | e3ce95be36234abdc5e2e07b0d935cb0f70547eb06e8be4b8a7633d601434124 |
+| evidence/91-s4-stmt.txt | Step 8b | 874c7d59c87cc3a38943381005f2d467c5c293bba17a3b47f6d49928e2c93ac4 |
+| evidence/91-s5-root-policies.txt | Step 8b | 244ed68c69e7053f10957c089e4b23d9f929c248d5fbd372fb175433bbb3e9f0 |
+| evidence/91-s5-stmt.txt | Step 8b | b69ef597d0a3d670eaaf2c040c109f035ba18f661537b92d243572577cc798d1 |
+| evidence/91-s6a-root-policies.txt | Step 8b | dec7fd20e7839d2338fad1210ae2e96421dfeb37afac962115b0baa8ae38c27e |
+| evidence/91-s6a-stmt.txt | Step 8b | 288df590615cf4315659fae975b5f50494e20a4fb859f99490e97be0f2722872 |
+| evidence/91-s6b-root-policies.txt | Step 8b | dec7fd20e7839d2338fad1210ae2e96421dfeb37afac962115b0baa8ae38c27e |
+| evidence/91-s6b-stmt.txt | Step 8b | 2b5b9218ba041dc14edcfeac1df57c83a986be253df4df1a420529aee813c24d |
+| evidence/91-s7-root-policies.txt | Step 8b | b58ad5e36b64eb59137653dc83e30cdd283b319e65cb77f313bf90015709839b |
+| evidence/91-s7-stmt.txt | Step 8b | 3f8a7ac23f429e35d4d6ad43c5569691dda06db0b395ab95feb322a9e3dc9195 |
+| evidence/92-after.txt | Step 8b | 2a28f83948e75d91d992fde6e5e3796e553250b927cf1038265cc6c9ea646a1c |
+| evidence/92-cleanup.txt | Step 8b | e761ec1c47f29ce5089f229238eba96aee470db482e9e6a07ad46786f4638608 |
+| evidence/92-compare.txt | Step 8b | 29914b38052028673a59a8f255637e41df00c15192ef7e2ead6623eef9b3c679 |
+| sql/90-create-alterer2.template.sql | Step 8b | 378803f841c67d1122647bf6b4d7b678bb709b45926829cc9b867a2182fc14fb |
+| sql/90-grants.sql | Step 8b | 2b92568962d9d351a700ed8f763aab2f04c5c67fadbcb6c7b4ab97ad1e16be9b |
+| sql/90-setup-1.sql | Step 8b | 14c698f4811d73a2bea38bec922c1755a0a6cd6ee899bbde47663de575b4a5bd |
+| sql/90-setup-2-open.sql | Step 8b | 51cfbdb015ecbec02490692894065c9b09a0cd22ed2880fb7c8c945f2279164f |
+| sql/91-root-policies.sql | Step 8b | 3c250d8d41229a7cb74c4610503ab745963997f1c9b5c4dd75d933f89e204240 |
+| sql/91-s1-stmt.sql | Step 8b | e4d1a9bb6b9f23ff8298b40c19ff3f88ef55fa364dc31323b56e58fedadffe8f |
+| sql/91-s2-stmt.sql | Step 8b | 9bb587e8412d78833744be5e672690900c7e878a8ee5ad099c5f1c0487dd6808 |
+| sql/91-s3-stmt.sql | Step 8b | e4d1a9bb6b9f23ff8298b40c19ff3f88ef55fa364dc31323b56e58fedadffe8f |
+| sql/91-s4-stmt.sql | Step 8b | 07f522b6874069ce6213b883005b510c5a3838569953ef3e898f7cf6cdaf7e99 |
+| sql/91-s5-stmt.sql | Step 8b | 9bb587e8412d78833744be5e672690900c7e878a8ee5ad099c5f1c0487dd6808 |
+| sql/91-s6a-stmt.sql | Step 8b | 8a4ed44b23f187a9ac3d9c67ce739fc9142f2c9c31146aef2b244591b8c382dd |
+| sql/91-s6b-stmt.sql | Step 8b | 0ce550e5ad3e807fd4bc1cb15fa34666841764445d56b1ec04997b3473524dad |
+| sql/91-s7-stmt.sql | Step 8b | d1f8ddd823591ba660928548e3eb813ac360a7352c9bd94bed8b782790eda4d6 |
+| sql/92-cleanup.sql | Step 8b | a801b7657f6f7b7315ef06f3058c5be43b77931b4189bb5534a6ae8eeffbbc6b |

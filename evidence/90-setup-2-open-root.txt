@@ -1,0 +1,29 @@
+--------------
+CREATE MASKING POLICY probe5_open(phone_column)
+CASE WHEN CURRENT_USER_IN('nobody@nowhere')
+     THEN phone_column
+     ELSE phone_column
+END
+--------------
+
+Query OK, 0 rows affected (0.034 sec)
+
+--------------
+SHOW WARNINGS
+--------------
+
+Empty set (0.001 sec)
+
+--------------
+SELECT policy_name FROM mysql.column_masking_policies WHERE policy_name LIKE 'probe5%'
+--------------
+
++-------------------+
+| policy_name       |
++-------------------+
+| probe5_mask_phone |
+| probe5_open       |
++-------------------+
+2 rows in set (0.007 sec)
+
+Bye

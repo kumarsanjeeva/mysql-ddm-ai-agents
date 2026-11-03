@@ -1,0 +1,4 @@
+SELECT CURRENT_USER(), CURRENT_ROLE();
+CREATE MASKING POLICY probe5_try(c) CASE WHEN CURRENT_ROLE_IN('x') THEN c ELSE mask_inner(c, 0, 4, '*') END;
+SHOW CREATE TABLE probe_alter;
+SELECT * FROM probe_alter;
